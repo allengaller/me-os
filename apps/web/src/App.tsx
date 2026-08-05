@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import { useAuthStore } from './stores/authStore';
 
 const Today = lazy(() => import('./pages/Today'));
+const Workbench = lazy(() => import('./pages/Workbench'));
 const DirectionHub = lazy(() => import('./pages/DirectionHub'));
 const ActionHub = lazy(() => import('./pages/ActionHub'));
 const CognitionHub = lazy(() => import('./pages/CognitionHub'));
@@ -47,6 +48,7 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Today />} />
           <Route path="today" element={<Navigate to="/" replace />} />
+          <Route path="workbench" element={<Workbench />} />
 
           {/* Direction */}
           <Route path="direction" element={<DirectionHub />} />

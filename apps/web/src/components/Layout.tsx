@@ -137,6 +137,22 @@ export default function Layout() {
             <span>今日</span>
           </Link>
 
+          <Link
+            to="/workbench"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              location.pathname === '/workbench'
+                ? 'text-white'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
+            }`}
+            style={location.pathname === '/workbench' ? { backgroundColor: 'var(--color-text-primary)' } : {}}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4h6v6H4V4zm10 0h6v3h-6V4zm0 6h6v10h-6V10zM4 14h6v6H4v-6z" />
+            </svg>
+            <span>工作台</span>
+          </Link>
+
           <div className="space-y-1">
             {navItems.map((item) => {
               const active = isActive(item.path);
