@@ -182,4 +182,125 @@ describe('Brand Routes', () => {
       expect(removed.json().success).toBe(true);
     });
   });
+
+  describe('内容与分发', () => {
+    async function seedChannel(app: Awaited<ReturnType<typeof createApp>>) {
+      const channel = await app.inject({
+        method: 'POST',
+        url: '/api/brand/channels',
+        payload: { platform: 'wechat-mp', name: '公众号' },
+      });
+      return channel.json().channel.id as string;
+    }
+
+    it('内容 CRUD 与状态筛选', async () => {
+      const app = await createApp();
+      await app.inject({ method: 'POST', url: '/api/brand/contents', payload: { title: '五维度框架解读', status: 'drafting' } });
+      const idea = await app.inject({ method: 'POST', url: '/api/brand/contents', payload: { title: 'MeLog 发布宣言' } });
+      expect(idea.statusCode).toBe(201);
+      const ideaId = idea.json().content.id;
+
+      const drafting = await app.inject({ method: 'GET', url: '/api/brand/contents?status=drafting' });
+      expect(drafting.json().contents).toHaveLength(1);
+      expect(drafting.json().contents[0].title).toBe('五维度框架解读');
+
+      const search = await app.inject({ method: 'GET', url: '/api/brand/contents?q=MeLog' });
+      expect(search.json().contents).toHaveLength(1);
+
+      const patched = await app.inject({
+        method: 'PATCH',
+        url: `/api/brand/contents/${ideaId}`,
+        payload: { priority: 'high', coreMessage: '生活数据应该汇聚而不是散落' },
+      });
+      expect(patched.json().content.priority).toBe('high');
+
+      const removed = await app.inject({ method: 'DELETE', url: `/api/brand/contents/${ideaId}` });
+      expect(removed.json().success).toBe(true);
+    });
+
+    it('pillarId 不属于当前用户时返回 400', async () => {
+      const app = await createApp();
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/brand/contents',
+        payload: { title: 'T', pillarId: 'nonexistent' },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('发布分发自动完成内容', async () => {
+      const app = await createApp();
+      const channelId = await seedChannel(app);
+      const content = await app.inject({
+        method: 'POST',
+        url: '/api/brand/contents',
+        payload: { title: '人生操作系统', status: 'ready' },
+      });
+      const contentId = content.json().content.id;
+
+      const dist = await app.inject({
+        method: 'POST',
+        url: `/api/brand/contents/${contentId}/distributions`,
+        payload: { channelId, adaptedTitle: '我为什么做 MeOS' },
+      });
+      expect(dist.statusCode).toBe(201);
+      const distId = dist.json().distribution.id;
+
+      const published = await app.inject({
+        method: 'PATCH',
+        url: `/api/brand/distributions/${distId}`,
+        payload: { status: 'published', url: 'https://mp.weixin.qq.com/s/xxx', views: 1200, likes: 88 },
+      });
+      expect(published.json().distribution.status).toBe('published');
+      expect(published.json().distribution.publishedAt).not.toBeNull();
+
+      const item = await prisma.contentItem.findUnique({ where: { id: contentId } });
+      expect(item!.status).toBe('published');
+      expect(item!.publishedAt).not.toBeNull();
+    });
+
+    it('归档内容不被发布自动化改写', async () => {
+      const app = await createApp();
+      const channelId = await seedChannel(app);
+      const content = await app.inject({
+        method: 'POST',
+        url: '/api/brand/contents',
+        payload: { title: '旧稿', status: 'archived' },
+      });
+      const contentId = content.json().content.id;
+      const dist = await app.inject({
+        method: 'POST',
+        url: `/api/brand/contents/${contentId}/distributions`,
+        payload: { channelId },
+      });
+      await app.inject({
+        method: 'PATCH',
+        url: `/api/brand/distributions/${dist.json().distribution.id}`,
+        payload: { status: 'published' },
+      });
+      const item = await prisma.contentItem.findUnique({ where: { id: contentId } });
+      expect(item!.status).toBe('archived');
+      expect(item!.publishedAt).toBeNull();
+    });
+
+    it('同内容同渠道重复添加返回 400', async () => {
+      const app = await createApp();
+      const channelId = await seedChannel(app);
+      const content = await app.inject({ method: 'POST', url: '/api/brand/contents', payload: { title: 'T' } });
+      const contentId = content.json().content.id;
+      await app.inject({ method: 'POST', url: `/api/brand/contents/${contentId}/distributions`, payload: { channelId } });
+      const dup = await app.inject({ method: 'POST', url: `/api/brand/contents/${contentId}/distributions`, payload: { channelId } });
+      expect(dup.statusCode).toBe(400);
+    });
+
+    it('跨用户访问返回 404', async () => {
+      const app = await createApp();
+      const content = await app.inject({ method: 'POST', url: '/api/brand/contents', payload: { title: '我的内容' } });
+      const contentId = content.json().content.id;
+
+      const otherApp = await createApp('brand-other-user');
+      const res = await otherApp.inject({ method: 'GET', url: `/api/brand/contents/${contentId}` });
+      expect(res.statusCode).toBe(404);
+    });
+  });
 });

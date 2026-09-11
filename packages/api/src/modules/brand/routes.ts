@@ -58,6 +58,49 @@ const pillarCreateSchema = z.object({
 
 const pillarUpdateSchema = pillarCreateSchema.partial();
 
+const contentCreateSchema = z.object({
+  title: z.string().min(1).max(300),
+  type: z.enum(contentTypes).optional(),
+  status: z.enum(contentStatuses).optional(),
+  coreMessage: z.string().max(2000).optional().nullable(),
+  outline: z.string().max(50000).optional().nullable(),
+  priority: z.enum(priorities).optional(),
+  publishDue: z.coerce.date().optional().nullable(),
+  pillarId: z.string().optional().nullable(),
+  topicId: z.string().optional().nullable(),
+  tags: z.string().max(500).optional().nullable(),
+  reviewNote: z.string().max(10000).optional().nullable(),
+  order: z.number().int().optional(),
+});
+
+const contentUpdateSchema = contentCreateSchema.partial();
+
+const listContentsSchema = z.object({
+  status: z.enum(contentStatuses).optional(),
+  type: z.enum(contentTypes).optional(),
+  pillarId: z.string().optional(),
+  topicId: z.string().optional(),
+  q: z.string().optional(),
+});
+
+const distributionCreateSchema = z.object({
+  channelId: z.string().min(1),
+  adaptedTitle: z.string().max(300).optional().nullable(),
+  note: z.string().max(2000).optional().nullable(),
+});
+
+const distributionUpdateSchema = z.object({
+  status: z.enum(distributionStatuses).optional(),
+  adaptedTitle: z.string().max(300).optional().nullable(),
+  url: z.string().max(500).optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable(),
+  views: z.number().int().min(0).optional().nullable(),
+  likes: z.number().int().min(0).optional().nullable(),
+  comments: z.number().int().min(0).optional().nullable(),
+  shares: z.number().int().min(0).optional().nullable(),
+  note: z.string().max(2000).optional().nullable(),
+});
+
 async function handleError(fastify: FastifyInstance, error: unknown, reply: FastifyReply) {
   if (error instanceof z.ZodError) {
     return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
@@ -73,6 +116,19 @@ async function ensureProfile(userId: string) {
   const existing = await prisma.brandProfile.findUnique({ where: { userId } });
   if (existing) return existing;
   return prisma.brandProfile.create({ data: { userId } });
+}
+
+async function assertRefOwned(
+  model: 'brandPillar' | 'topic',
+  id: string,
+  userId: string,
+): Promise<boolean> {
+  if (model === 'brandPillar') {
+    const found = await prisma.brandPillar.findFirst({ where: { id, userId }, select: { id: true } });
+    return Boolean(found);
+  }
+  const found = await prisma.topic.findFirst({ where: { id, userId }, select: { id: true } });
+  return Boolean(found);
 }
 
 export const brandRoutes: FastifyPluginAsync = async (fastify) => {
@@ -249,6 +305,187 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
         take: query.limit ?? 30,
       });
       return { snapshots };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  // ---------- 内容流水线 ----------
+  fastify.get('/contents', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const query = listContentsSchema.parse(request.query);
+      const where: Prisma.ContentItemWhereInput = { userId: request.user.userId };
+      if (query.status) where.status = query.status;
+      if (query.type) where.type = query.type;
+      if (query.pillarId) where.pillarId = query.pillarId;
+      if (query.topicId) where.topicId = query.topicId;
+      if (query.q) where.title = { contains: query.q };
+
+      const contents = await prisma.contentItem.findMany({
+        where,
+        orderBy: [{ order: 'asc' }, { updatedAt: 'desc' }],
+        include: {
+          pillar: true,
+          topic: { select: { id: true, title: true } },
+          _count: { select: { distributions: true } },
+        },
+      });
+      return { contents };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.post('/contents', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const data = contentCreateSchema.parse(request.body);
+      if (data.pillarId && !(await assertRefOwned('brandPillar', data.pillarId, request.user.userId))) {
+        return reply.code(400).send({ error: '内容支柱不存在' });
+      }
+      if (data.topicId && !(await assertRefOwned('topic', data.topicId, request.user.userId))) {
+        return reply.code(400).send({ error: '课题不存在' });
+      }
+      const content = await prisma.contentItem.create({
+        data: { ...data, userId: request.user.userId },
+      });
+      return reply.code(201).send({ content });
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.get('/contents/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const content = await prisma.contentItem.findFirst({
+        where: { id, userId: request.user.userId },
+        include: {
+          distributions: { include: { channel: true }, orderBy: { createdAt: 'asc' } },
+          pillar: true,
+          topic: { select: { id: true, title: true } },
+        },
+      });
+      if (!content) return reply.code(404).send({ error: 'Content not found' });
+      return { content };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.patch('/contents/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const data = contentUpdateSchema.parse(request.body);
+      if (data.pillarId && !(await assertRefOwned('brandPillar', data.pillarId, request.user.userId))) {
+        return reply.code(400).send({ error: '内容支柱不存在' });
+      }
+      if (data.topicId && !(await assertRefOwned('topic', data.topicId, request.user.userId))) {
+        return reply.code(400).send({ error: '课题不存在' });
+      }
+      const result = await prisma.contentItem.updateMany({
+        where: { id, userId: request.user.userId },
+        data,
+      });
+      if (result.count === 0) return reply.code(404).send({ error: 'Content not found' });
+      const content = await prisma.contentItem.findUnique({ where: { id } });
+      return { content };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.delete('/contents/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const result = await prisma.contentItem.deleteMany({
+        where: { id, userId: request.user.userId },
+      });
+      if (result.count === 0) return reply.code(404).send({ error: 'Content not found' });
+      return { success: true };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  // ---------- 分发记录（一鱼多吃） ----------
+  fastify.post('/contents/:id/distributions', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const data = distributionCreateSchema.parse(request.body);
+      const content = await prisma.contentItem.findFirst({
+        where: { id, userId: request.user.userId },
+        select: { id: true },
+      });
+      if (!content) return reply.code(404).send({ error: 'Content not found' });
+      const channel = await prisma.platformChannel.findFirst({
+        where: { id: data.channelId, userId: request.user.userId },
+        select: { id: true },
+      });
+      if (!channel) return reply.code(400).send({ error: '渠道不存在' });
+      const dup = await prisma.contentDistribution.findUnique({
+        where: { contentId_channelId: { contentId: id, channelId: data.channelId } },
+      });
+      if (dup) return reply.code(400).send({ error: '该渠道已有分发记录' });
+      const distribution = await prisma.contentDistribution.create({
+        data: {
+          userId: request.user.userId,
+          contentId: id,
+          channelId: data.channelId,
+          adaptedTitle: data.adaptedTitle,
+          note: data.note,
+        },
+        include: { channel: true },
+      });
+      return reply.code(201).send({ distribution });
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.patch('/distributions/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const data = distributionUpdateSchema.parse(request.body);
+      const existing = await prisma.contentDistribution.findFirst({
+        where: { id, userId: request.user.userId },
+        include: { content: true },
+      });
+      if (!existing) return reply.code(404).send({ error: 'Distribution not found' });
+
+      const updateData: Prisma.ContentDistributionUpdateInput = { ...data };
+      if (data.status === 'published') {
+        const publishedAt = data.publishedAt ?? existing.publishedAt ?? new Date();
+        updateData.publishedAt = publishedAt;
+        // 发布自动化：归档内容除外，首个渠道发布即完成内容
+        if (existing.content.status !== 'archived') {
+          await prisma.contentItem.update({
+            where: { id: existing.contentId },
+            data: {
+              status: 'published',
+              ...(existing.content.publishedAt ? {} : { publishedAt }),
+            },
+          });
+        }
+      }
+      const distribution = await prisma.contentDistribution.update({
+        where: { id },
+        data: updateData,
+        include: { channel: true },
+      });
+      return { distribution };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.delete('/distributions/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const result = await prisma.contentDistribution.deleteMany({
+        where: { id, userId: request.user.userId },
+      });
+      if (result.count === 0) return reply.code(404).send({ error: 'Distribution not found' });
+      return { success: true };
     } catch (error) {
       return handleError(fastify, error, reply);
     }
