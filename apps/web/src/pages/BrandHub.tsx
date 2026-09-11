@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, Gem, GitBranch, Radio, Package } from 'lucide-react';
 import Overview from './brand/Overview';
@@ -19,11 +18,11 @@ const TABS: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
 
 export default function BrandHub() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get('tab') as TabKey) || 'overview';
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  // 以 searchParams 为状态源：外部 Link（如 Overview 跳 /brand?tab=profile）改 query 即可切换 Tab
+  const tabParam = searchParams.get('tab') as TabKey | null;
+  const activeTab: TabKey = tabParam && TABS.some((t) => t.key === tabParam) ? tabParam : 'overview';
 
   const handleTabChange = (tab: TabKey) => {
-    setActiveTab(tab);
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       next.set('tab', tab);

@@ -468,25 +468,32 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
       if (!existing) return reply.code(404).send({ error: 'Distribution not found' });
 
       const updateData: Prisma.ContentDistributionUpdateInput = { ...data };
+      const operations: Prisma.PrismaPromise<unknown>[] = [];
       if (data.status === 'published') {
         const publishedAt = data.publishedAt ?? existing.publishedAt ?? new Date();
         updateData.publishedAt = publishedAt;
         // 发布自动化：归档内容除外，首个渠道发布即完成内容
         if (existing.content.status !== 'archived') {
-          await prisma.contentItem.update({
-            where: { id: existing.contentId },
-            data: {
-              status: 'published',
-              ...(existing.content.publishedAt ? {} : { publishedAt }),
-            },
-          });
+          operations.push(
+            prisma.contentItem.update({
+              where: { id: existing.contentId },
+              data: {
+                status: 'published',
+                ...(existing.content.publishedAt ? {} : { publishedAt }),
+              },
+            })
+          );
         }
       }
-      const distribution = await prisma.contentDistribution.update({
-        where: { id },
-        data: updateData,
-        include: { channel: true },
-      });
+      operations.push(
+        prisma.contentDistribution.update({
+          where: { id },
+          data: updateData,
+          include: { channel: true },
+        })
+      );
+      // 两步写入包在同一事务，避免第二步失败留下不一致
+      const [, distribution] = await prisma.$transaction(operations);
       return { distribution };
     } catch (error) {
       return handleError(fastify, error, reply);

@@ -67,6 +67,7 @@ export default function Works() {
         description: form.description || null,
         progress: form.progress || null,
         url: form.url || null,
+        launchedAt: form.launchedAt || null,
       });
       setCreating(false);
       await load();
