@@ -101,6 +101,19 @@ const distributionUpdateSchema = z.object({
   note: z.string().max(2000).optional().nullable(),
 });
 
+const workCreateSchema = z.object({
+  name: z.string().min(1).max(300),
+  type: z.enum(workTypes).optional(),
+  status: z.enum(workStatuses).optional(),
+  description: z.string().max(5000).optional().nullable(),
+  progress: z.string().max(2000).optional().nullable(),
+  url: z.string().max(500).optional().nullable(),
+  launchedAt: z.coerce.date().optional().nullable(),
+  order: z.number().int().optional(),
+});
+
+const workUpdateSchema = workCreateSchema.partial();
+
 async function handleError(fastify: FastifyInstance, error: unknown, reply: FastifyReply) {
   if (error instanceof z.ZodError) {
     return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
@@ -485,6 +498,56 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
         where: { id, userId: request.user.userId },
       });
       if (result.count === 0) return reply.code(404).send({ error: 'Distribution not found' });
+      return { success: true };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  // ---------- 作品库 ----------
+  fastify.get('/works', { onRequest: [fastify.authenticate] }, async (request) => {
+    const works = await prisma.work.findMany({
+      where: { userId: request.user.userId },
+      orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],
+    });
+    return { works };
+  });
+
+  fastify.post('/works', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const data = workCreateSchema.parse(request.body);
+      const work = await prisma.work.create({
+        data: { ...data, userId: request.user.userId },
+      });
+      return reply.code(201).send({ work });
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.patch('/works/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const data = workUpdateSchema.parse(request.body);
+      const result = await prisma.work.updateMany({
+        where: { id, userId: request.user.userId },
+        data,
+      });
+      if (result.count === 0) return reply.code(404).send({ error: 'Work not found' });
+      const work = await prisma.work.findUnique({ where: { id } });
+      return { work };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  fastify.delete('/works/:id', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const result = await prisma.work.deleteMany({
+        where: { id, userId: request.user.userId },
+      });
+      if (result.count === 0) return reply.code(404).send({ error: 'Work not found' });
       return { success: true };
     } catch (error) {
       return handleError(fastify, error, reply);

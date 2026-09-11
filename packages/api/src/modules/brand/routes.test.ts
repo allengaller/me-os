@@ -303,4 +303,31 @@ describe('Brand Routes', () => {
       expect(res.statusCode).toBe(404);
     });
   });
+
+  describe('作品库', () => {
+    it('创建、更新、列表、删除作品', async () => {
+      const app = await createApp();
+      const created = await app.inject({
+        method: 'POST',
+        url: '/api/brand/works',
+        payload: { name: '《人生操作系统》', type: 'book', status: 'in_progress', progress: '第 3 章' },
+      });
+      expect(created.statusCode).toBe(201);
+      const id = created.json().work.id;
+
+      const patched = await app.inject({
+        method: 'PATCH',
+        url: `/api/brand/works/${id}`,
+        payload: { status: 'launched', launchedAt: new Date().toISOString(), url: 'https://example.com/book' },
+      });
+      expect(patched.json().work.status).toBe('launched');
+      expect(patched.json().work.launchedAt).not.toBeNull();
+
+      const list = await app.inject({ method: 'GET', url: '/api/brand/works' });
+      expect(list.json().works).toHaveLength(1);
+
+      const removed = await app.inject({ method: 'DELETE', url: `/api/brand/works/${id}` });
+      expect(removed.json().success).toBe(true);
+    });
+  });
 });
