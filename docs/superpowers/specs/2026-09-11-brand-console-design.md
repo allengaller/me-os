@@ -145,7 +145,7 @@ MeOS 需要「自媒体控制台」支撑 定位 → 创作 → 分发 →复盘
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
-| GET | `/profile` | 不存在则返回空壳对象（前端可直接编辑保存） |
+| GET | `/profile` | 不存在则返回品牌蓝本默认值（前端可直接编辑保存） |
 | PUT | `/profile` | upsert |
 | GET / POST | `/pillars` | 列表（按 order）/ 创建 |
 | PATCH / DELETE | `/pillars/:id` | 更新 / 删除 |
@@ -209,7 +209,7 @@ MeOS 需要「自媒体控制台」支撑 定位 → 创作 → 分发 →复盘
 1. **发布自动化**：PATCH 分发记录 `status=published` 且 `publishedAt` 有值（未传则取当前时间）时：
    - 所属内容 `publishedAt` 为空 → 填充分发发布时间
    - 所属内容 `status` 非 `archived` → 置为 `published`
-2. **空壳 profile**：GET profile 不存在时返回全空字段对象（不写库），PUT 时 upsert。
+2. **空壳 profile**：GET profile 不存在时返回品牌蓝本默认值（取值与实现见 `packages/api/src/modules/brand/constants.ts`，来源 docs/brand/DESIGN.md §0，不写库）；PUT 时 upsert，create 路径合并蓝本默认值。
 
 ## 7. 错误处理
 

@@ -4,6 +4,8 @@
 > 本板块是 MeOS 第七板块「品牌」，承载 定位 → 创作 → 分发 → 复盘 的闭环，
 > 板块的产品设计与数据模型见 [设计文档](./superpowers/specs/2026-09-11-brand-console-design.md)。
 > 品牌总蓝本（定位/人设/语调等 BrandProfile 字段的取值来源）见 [brand/DESIGN.md](./brand/DESIGN.md)。
+> 个人 IP 建设全案（建设逻辑/哲学/方法/思路/实战 五层知识库）见 [ip/](./ip/README.md)。
+> 账号从 0 到 1 的起号与增长作战手册（冷启动/成长期/分平台机制/指标复盘/90 天 SOP）见 [brand/ACCOUNT_LAUNCH.md](./brand/ACCOUNT_LAUNCH.md)。
 
 ## 品牌蓝本摘要
 
@@ -16,7 +18,18 @@
 
 一句话定位：**基于极致工程的田野调查者 —— 把各行各业最真实的反馈带进内容，所有输出即本人，全程 build in public。**
 
-完整展开（黄金圈/定位/受众/人格/语调/内容战略/伦理/衡量）：[brand/DESIGN.md](./brand/DESIGN.md)
+品牌资料导航：
+
+| 文档 | 内容 |
+|---|---|
+| [brand/DESIGN.md](./brand/DESIGN.md) | 品牌总蓝本：核心/定位/受众/人格/语调/内容战略/口号视觉/伦理/衡量 |
+| [brand/ACCOUNT_LAUNCH.md](./brand/ACCOUNT_LAUNCH.md) | 账号级起号/增长作战手册：平台选择/起号策略/数据指挥/增长引擎/投放原则 |
+| [brand/OPERATIONS.md](./brand/OPERATIONS.md) | 自媒体运营手册：生产/拍摄/发布/数据/复盘/增长/合规/工具栈 SOP |
+| [brand/COPY.md](./brand/COPY.md) | 文案资产库：平台简介/片尾口播/邀约话术/更正与商单模板 |
+| [brand/COMPETITOR_RESEARCH.md](./brand/COMPETITOR_RESEARCH.md) | 竞品深度调研：五类竞品拆解/横向对比/空白生态位/可借鉴打法（DESIGN §2.2/§2.4 证据支撑） |
+| [brand/BUSINESS.md](./brand/BUSINESS.md) | 一人公司经营手册：商业模式/产品线/定价/财务法务/资产安全/风险/季度节奏 |
+| [self-media/](./self-media/README.md) | 自媒体实战知识库：实战总纲/9 平台手册/运营方法论大全/纪录片话题预判 |
+| [superpowers/specs/2026-09-11-brand-console-design.md](./superpowers/specs/2026-09-11-brand-console-design.md) | 品牌板块实现设计：数据模型/API/前端 |
 
 ## 板块说明：定位 → 内容 → 分发 → 复盘
 

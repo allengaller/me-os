@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { PrismaClient } from '@prisma/client';
 import { buildTestApp } from '../../test-utils.js';
 import { brandRoutes } from './routes.js';
+import { BRAND_PROFILE_DEFAULTS } from './constants.js';
 
 const prisma = new PrismaClient();
 const USER_ID = 'brand-test-user';
@@ -46,15 +47,20 @@ describe('Brand Routes', () => {
   }
 
   describe('品牌档案', () => {
-    it('GET /profile 无记录时返回空壳', async () => {
+    it('GET /profile 无记录时返回蓝本默认值（不写库）', async () => {
       const app = await createApp();
       const res = await app.inject({ method: 'GET', url: '/api/brand/profile' });
       expect(res.statusCode).toBe(200);
-      expect(res.json().profile.slogan).toBeNull();
-      expect(res.json().profile.mission).toBeNull();
+      const profile = res.json().profile;
+      expect(profile.slogan).toBeNull();
+      expect(profile.mission).toBe(BRAND_PROFILE_DEFAULTS.mission);
+      expect(profile.personaTags).toBe(BRAND_PROFILE_DEFAULTS.personaTags);
+      expect(profile.toneOfVoice).toBe(BRAND_PROFILE_DEFAULTS.toneOfVoice);
+      const rows = await prisma.brandProfile.findMany({ where: { userId: USER_ID } });
+      expect(rows).toHaveLength(0);
     });
 
-    it('PUT /profile upsert：创建后再更新仍是单条', async () => {
+    it('PUT /profile upsert：创建时合并蓝本默认值，再次保存为更新', async () => {
       const app = await createApp();
       const first = await app.inject({
         method: 'PUT',
@@ -63,6 +69,8 @@ describe('Brand Routes', () => {
       });
       expect(first.statusCode).toBe(200);
       expect(first.json().profile.slogan).toBe('用系统经营人生');
+      // create 路径合并默认值：未传字段取蓝本取值
+      expect(first.json().profile.mission).toBe(BRAND_PROFILE_DEFAULTS.mission);
 
       const second = await app.inject({
         method: 'PUT',

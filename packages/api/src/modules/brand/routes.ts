@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { getBrandOverview } from './service.js';
+import { BRAND_PROFILE_DEFAULTS } from './constants.js';
 
 const contentTypes = ['article', 'short-video', 'long-video', 'thread', 'podcast', 'other'] as const;
 const contentStatuses = ['idea', 'drafting', 'ready', 'published', 'archived'] as const;
@@ -151,16 +152,11 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
   fastify.get('/profile', { onRequest: [fastify.authenticate] }, async (request) => {
     const profile = await prisma.brandProfile.findUnique({ where: { userId: request.user.userId } });
     if (profile) return { profile };
+    // 空壳 profile：返回品牌蓝本默认值（不写库），前端可直接编辑保存
     return {
       profile: {
         userId: request.user.userId,
-        mission: null,
-        positioning: null,
-        slogan: null,
-        personaTags: null,
-        toneOfVoice: null,
-        targetAudience: null,
-        visualNotes: null,
+        ...BRAND_PROFILE_DEFAULTS,
       },
     };
   });
@@ -171,7 +167,7 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
       const profile = await prisma.brandProfile.upsert({
         where: { userId: request.user.userId },
         update: data,
-        create: { ...data, userId: request.user.userId },
+        create: { ...BRAND_PROFILE_DEFAULTS, ...data, userId: request.user.userId },
       });
       return { profile };
     } catch (error) {
