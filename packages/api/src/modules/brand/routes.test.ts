@@ -113,4 +113,73 @@ describe('Brand Routes', () => {
       expect(dup.statusCode).toBe(400);
     });
   });
+
+  describe('渠道与快照', () => {
+    it('创建渠道并录入两个快照', async () => {
+      const app = await createApp();
+      const channel = await app.inject({
+        method: 'POST',
+        url: '/api/brand/channels',
+        payload: { platform: 'wechat-mp', name: '公众号', handle: 'caoyalun', cadence: '每周 1 篇' },
+      });
+      expect(channel.statusCode).toBe(201);
+      const channelId = channel.json().channel.id;
+
+      const s1 = await app.inject({
+        method: 'POST',
+        url: '/api/brand/snapshots',
+        payload: { channelId, followers: 100 },
+      });
+      expect(s1.statusCode).toBe(201);
+
+      const s2 = await app.inject({
+        method: 'POST',
+        url: '/api/brand/snapshots',
+        payload: { channelId, followers: 150, views: 500, likes: 60, revenue: 12.5 },
+      });
+      expect(s2.statusCode).toBe(201);
+
+      const list = await app.inject({
+        method: 'GET',
+        url: `/api/brand/snapshots?channelId=${channelId}`,
+      });
+      expect(list.json().snapshots).toHaveLength(2);
+      expect(list.json().snapshots[0].followers).toBe(150); // 按 recordedAt 倒序
+    });
+
+    it('快照必须归属当前用户的渠道', async () => {
+      const app = await createApp();
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/brand/snapshots',
+        payload: { channelId: 'nonexistent', followers: 10 },
+      });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('同平台同名渠道冲突返回 400', async () => {
+      const app = await createApp();
+      await app.inject({ method: 'POST', url: '/api/brand/channels', payload: { platform: 'x', name: 'X 主号' } });
+      const dup = await app.inject({ method: 'POST', url: '/api/brand/channels', payload: { platform: 'x', name: 'X 主号' } });
+      expect(dup.statusCode).toBe(400);
+    });
+
+    it('更新与删除渠道', async () => {
+      const app = await createApp();
+      const channel = await app.inject({
+        method: 'POST',
+        url: '/api/brand/channels',
+        payload: { platform: 'xiaohongshu', name: '小红书' },
+      });
+      const id = channel.json().channel.id;
+      const patched = await app.inject({
+        method: 'PATCH',
+        url: `/api/brand/channels/${id}`,
+        payload: { status: 'paused' },
+      });
+      expect(patched.json().channel.status).toBe('paused');
+      const removed = await app.inject({ method: 'DELETE', url: `/api/brand/channels/${id}` });
+      expect(removed.json().success).toBe(true);
+    });
+  });
 });
