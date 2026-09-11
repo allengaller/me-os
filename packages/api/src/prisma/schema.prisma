@@ -42,6 +42,13 @@ model User {
   melogSkills        MeLogSkill[]
   melogRuns          MeLogRun[]
   melogSchedules     MeLogSchedule[]
+  brandProfile       BrandProfile?
+  brandPillars       BrandPillar[]
+  brandChannels      PlatformChannel[]
+  brandContents      ContentItem[]
+  brandDistributions ContentDistribution[]
+  works              Work[]
+  metricSnapshots    MetricSnapshot[]
 }
 
 // ==================== 方向 (Direction) ====================
@@ -248,6 +255,7 @@ model Topic {
   notes        TopicNote[]
   insights     InsightNote[]
   readingItems ReadingItem[]
+  brandContents ContentItem[]
 
   @@index([userId, category])
   @@index([userId, status])
@@ -643,4 +651,163 @@ model WorkflowConnection {
   @@index([workflowId])
   @@index([sourceStepId])
   @@index([targetStepId])
+}
+
+// ==================== 品牌 (Brand) ====================
+
+// 品牌档案：每用户单例（upsert）
+model BrandProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  mission        String? // 定位宣言：我为谁提供什么独特价值
+  positioning    String? // 一句话定位
+  slogan         String?
+  personaTags    String? // 人设关键词，逗号分隔
+  toneOfVoice    String? // 语调规范
+  targetAudience String?
+  visualNotes    String? // 视觉规范备注（头像/配色/字体等）
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pillars BrandPillar[]
+}
+
+// 内容支柱
+model BrandPillar {
+  id          String   @id @default(uuid())
+  userId      String
+  profileId   String
+  name        String
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile  BrandProfile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  contents ContentItem[]
+
+  @@unique([profileId, name])
+  @@index([userId])
+}
+
+// 平台渠道
+model PlatformChannel {
+  id          String   @id @default(uuid())
+  userId      String
+  platform    String // 预置标识：wechat-mp / xiaohongshu / wechat-channels / douyin / zhihu / weibo / x / youtube / bilibili / custom
+  name        String
+  handle      String? // 账号名/ID
+  url         String? // 主页链接
+  positioning String? // 该平台的差异化定位
+  cadence     String? // 更新频率（如「每周 2 篇」）
+  status      String   @default("active") // active | paused | dormant
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  snapshots     MetricSnapshot[]
+  distributions ContentDistribution[]
+
+  @@unique([userId, platform, name])
+  @@index([userId, status])
+}
+
+// 内容（流水线核心）
+model ContentItem {
+  id          String    @id @default(uuid())
+  userId      String
+  title       String
+  type        String    @default("article") // article | short-video | long-video | thread | podcast | other
+  status      String    @default("idea") // idea | drafting | ready | published | archived
+  coreMessage String? // 核心观点/价值主张
+  outline     String? // 大纲/脚本要点
+  priority    String    @default("medium") // low | medium | high
+  publishDue  DateTime? // 计划发布日
+  pillarId    String?
+  topicId     String? // 软关联认知板块课题
+  reviewNote  String? // 发布后复盘
+  tags        String? // 逗号分隔
+  publishedAt DateTime? // 首次分发发布时自动填充
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pillar        BrandPillar?          @relation(fields: [pillarId], references: [id], onDelete: SetNull)
+  topic         Topic?                @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  distributions ContentDistribution[]
+
+  @@index([userId, status])
+  @@index([pillarId])
+  @@index([topicId])
+}
+
+// 分发记录（一鱼多吃）：同内容同渠道一条，重复发布时更新
+model ContentDistribution {
+  id           String    @id @default(uuid())
+  userId       String // 冗余存储，便于隔离查询
+  contentId    String
+  channelId    String
+  status       String    @default("planned") // planned | published
+  adaptedTitle String? // 平台适配标题
+  url          String?
+  publishedAt  DateTime?
+  views        Int?
+  likes        Int?
+  comments     Int?
+  shares       Int?
+  note         String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content ContentItem     @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  channel PlatformChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, channelId])
+  @@index([channelId])
+}
+
+// 作品库：书 / 课程 / App / 小程序 / Web App 等长期工程
+model Work {
+  id          String    @id @default(uuid())
+  userId      String
+  name        String
+  type        String    @default("book") // book | course | app | miniprogram | webapp | other
+  status      String    @default("concept") // concept | in_progress | launched | maintained | archived
+  description String?
+  progress    String? // 进度说明（如「第 3 章」「v0.2 开发中」）
+  url         String?
+  launchedAt  DateTime?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+// 渠道指标快照：followers 为累计值，views/likes/comments/shares/revenue 为本周期增量
+model MetricSnapshot {
+  id         String   @id @default(uuid())
+  userId     String // 冗余
+  channelId  String
+  followers  Int
+  views      Int?
+  likes      Int?
+  comments   Int?
+  shares     Int?
+  revenue    Float?
+  note       String?
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel PlatformChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, recordedAt])
 }
