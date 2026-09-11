@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyPluginAsync, FastifyReply } from 'fastify'
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
+import { getBrandOverview } from './service.js';
 
 const contentTypes = ['article', 'short-video', 'long-video', 'thread', 'podcast', 'other'] as const;
 const contentStatuses = ['idea', 'drafting', 'ready', 'published', 'archived'] as const;
@@ -66,6 +67,7 @@ const contentCreateSchema = z.object({
   outline: z.string().max(50000).optional().nullable(),
   priority: z.enum(priorities).optional(),
   publishDue: z.coerce.date().optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable(),
   pillarId: z.string().optional().nullable(),
   topicId: z.string().optional().nullable(),
   tags: z.string().max(500).optional().nullable(),
@@ -549,6 +551,16 @@ export const brandRoutes: FastifyPluginAsync = async (fastify) => {
       });
       if (result.count === 0) return reply.code(404).send({ error: 'Work not found' });
       return { success: true };
+    } catch (error) {
+      return handleError(fastify, error, reply);
+    }
+  });
+
+  // ---------- 总览 ----------
+  fastify.get('/overview', { onRequest: [fastify.authenticate] }, async (request, reply) => {
+    try {
+      const overview = await getBrandOverview(request.user.userId);
+      return overview;
     } catch (error) {
       return handleError(fastify, error, reply);
     }

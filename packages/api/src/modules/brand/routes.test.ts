@@ -330,4 +330,53 @@ describe('Brand Routes', () => {
       expect(removed.json().success).toBe(true);
     });
   });
+
+  describe('总览', () => {
+    it('聚合漏斗、发布数、渠道增量与支柱覆盖', async () => {
+      const app = await createApp();
+      await app.inject({
+        method: 'PUT',
+        url: '/api/brand/profile',
+        payload: { slogan: '用系统经营人生' },
+      });
+      const pillar = await app.inject({ method: 'POST', url: '/api/brand/pillars', payload: { name: '人生管理系统' } });
+      const pillarId = pillar.json().pillar.id;
+
+      await app.inject({ method: 'POST', url: '/api/brand/contents', payload: { title: '选题 A' } });
+      await app.inject({
+        method: 'POST',
+        url: '/api/brand/contents',
+        payload: { title: '已发 B', status: 'published', publishedAt: new Date().toISOString(), pillarId },
+      });
+
+      const channel = await app.inject({
+        method: 'POST',
+        url: '/api/brand/channels',
+        payload: { platform: 'youtube', name: 'YouTube' },
+      });
+      const channelId = channel.json().channel.id;
+      await app.inject({ method: 'POST', url: '/api/brand/snapshots', payload: { channelId, followers: 100 } });
+      await app.inject({ method: 'POST', url: '/api/brand/snapshots', payload: { channelId, followers: 150, views: 800 } });
+
+      const res = await app.inject({ method: 'GET', url: '/api/brand/overview' });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body.profile.slogan).toBe('用系统经营人生');
+      expect(body.pipeline.idea).toBe(1);
+      expect(body.pipeline.published).toBe(1);
+      expect(body.publishedThisWeek).toBe(1);
+      expect(body.channels[0].latest.followers).toBe(150);
+      expect(body.channels[0].followerDelta).toBe(50);
+      expect(body.trends[0].series).toHaveLength(2);
+      expect(body.pillars[0].contentCount).toBe(1);
+    });
+
+    it('空数据时返回零值结构', async () => {
+      const app = await createApp();
+      const res = await app.inject({ method: 'GET', url: '/api/brand/overview' });
+      expect(res.json().pipeline).toEqual({ idea: 0, drafting: 0, ready: 0, published: 0, archived: 0 });
+      expect(res.json().channels).toEqual([]);
+      expect(res.json().profile).toBeNull();
+    });
+  });
 });
