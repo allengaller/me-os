@@ -382,6 +382,145 @@ export interface MeLogOverview {
   llm: { configured: boolean; model?: string };
 }
 
+// ==================== 品牌 (Brand) ====================
+
+export type ContentStatus = 'idea' | 'drafting' | 'ready' | 'published' | 'archived';
+export type ContentType = 'article' | 'short-video' | 'long-video' | 'thread' | 'podcast' | 'other';
+export type ChannelStatus = 'active' | 'paused' | 'dormant';
+export type DistributionStatus = 'planned' | 'published';
+export type WorkType = 'book' | 'course' | 'app' | 'miniprogram' | 'webapp' | 'other';
+export type WorkStatus = 'concept' | 'in_progress' | 'launched' | 'maintained' | 'archived';
+
+export interface BrandProfile {
+  id?: string;
+  userId?: string;
+  mission?: string | null;
+  positioning?: string | null;
+  slogan?: string | null;
+  personaTags?: string | null;
+  toneOfVoice?: string | null;
+  targetAudience?: string | null;
+  visualNotes?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BrandPillar {
+  id: string;
+  userId: string;
+  profileId: string;
+  name: string;
+  description?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlatformChannel {
+  id: string;
+  userId: string;
+  platform: string;
+  name: string;
+  handle?: string | null;
+  url?: string | null;
+  positioning?: string | null;
+  cadence?: string | null;
+  status: ChannelStatus;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContentDistribution {
+  id: string;
+  userId: string;
+  contentId: string;
+  channelId: string;
+  status: DistributionStatus;
+  adaptedTitle?: string | null;
+  url?: string | null;
+  publishedAt?: string | null;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
+  shares?: number | null;
+  note?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  channel?: PlatformChannel;
+}
+
+export interface ContentItem {
+  id: string;
+  userId: string;
+  title: string;
+  type: ContentType;
+  status: ContentStatus;
+  coreMessage?: string | null;
+  outline?: string | null;
+  priority: 'low' | 'medium' | 'high';
+  publishDue?: string | null;
+  pillarId?: string | null;
+  topicId?: string | null;
+  reviewNote?: string | null;
+  tags?: string | null;
+  publishedAt?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  pillar?: BrandPillar | null;
+  topic?: { id: string; title: string } | null;
+  distributions?: ContentDistribution[];
+}
+
+export interface Work {
+  id: string;
+  userId: string;
+  name: string;
+  type: WorkType;
+  status: WorkStatus;
+  description?: string | null;
+  progress?: string | null;
+  url?: string | null;
+  launchedAt?: string | null;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MetricSnapshot {
+  id: string;
+  userId: string;
+  channelId: string;
+  followers: number;
+  views?: number | null;
+  likes?: number | null;
+  comments?: number | null;
+  shares?: number | null;
+  revenue?: number | null;
+  note?: string | null;
+  recordedAt: string;
+  createdAt: string;
+}
+
+export interface BrandOverview {
+  profile: { slogan?: string | null; mission?: string | null } | null;
+  pipeline: Record<ContentStatus, number>;
+  publishedThisWeek: number;
+  publishedThisMonth: number;
+  channels: {
+    id: string;
+    name: string;
+    platform: string;
+    status: ChannelStatus;
+    latest: { followers: number; views: number | null; recordedAt: string } | null;
+    followerDelta: number | null;
+    snapshotCount: number;
+  }[];
+  trends: { channelId: string; name: string; series: { recordedAt: string; followers: number }[] }[];
+  pillars: { id: string; name: string; contentCount: number }[];
+}
+
 // ==================== API 响应类型 ====================
 
 export interface ApiResponse<T> {
