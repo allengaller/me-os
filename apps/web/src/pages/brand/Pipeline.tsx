@@ -5,9 +5,12 @@ import Modal from '../../components/Modal';
 import FormField from '../../components/FormField';
 import EmptyState from '../../components/EmptyState';
 import { CONTENT_STATUS_LABELS, CONTENT_TYPE_LABELS, CONTENT_TYPE_ICONS, PRIORITY_LABELS } from './constants';
-import type { BrandPillar, ContentDistribution, ContentItem, PlatformChannel } from '@meos/shared';
+import type { BrandPillar, ContentDistribution, ContentItem, ContentStatus, PlatformChannel } from '@meos/shared';
 
 const COLUMNS = ['idea', 'drafting', 'ready', 'published'] as const;
+
+// 列表端点（GET /brand/contents）返回 `_count.distributions` 而非 distributions 数组（数组仅在详情端点返回）
+type ContentListItem = ContentItem & { _count?: { distributions: number } };
 
 interface TopicOption {
   id: string;
@@ -27,7 +30,7 @@ const emptyForm = {
 };
 
 export default function Pipeline() {
-  const [contents, setContents] = useState<ContentItem[]>([]);
+  const [contents, setContents] = useState<ContentListItem[]>([]);
   const [channels, setChannels] = useState<PlatformChannel[]>([]);
   const [pillars, setPillars] = useState<BrandPillar[]>([]);
   const [topics, setTopics] = useState<TopicOption[]>([]);
@@ -124,9 +127,10 @@ export default function Pipeline() {
     }
   };
 
-  const handleStatus = async (content: ContentItem, status: string) => {
+  const handleStatus = async (content: ContentItem, status: ContentStatus) => {
     try {
       await api.patch(`/brand/contents/${content.id}`, { status });
+      setEditing((prev) => (prev ? { ...prev, status } : prev));
       await load();
     } catch (err) {
       console.error(err);
@@ -235,7 +239,7 @@ export default function Pipeline() {
                           <p className="text-xs mt-1 text-amber-600">计划 {content.publishDue.slice(0, 10)}</p>
                         )}
                         <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
-                          {content.distributions?.length ?? 0} 个渠道
+                          {content._count?.distributions ?? 0} 个渠道
                         </p>
                       </button>
                     );
@@ -324,7 +328,7 @@ export default function Pipeline() {
               <FormField label="当前状态">
                 <select
                   value={editing.status}
-                  onChange={(e) => handleStatus(editing, e.target.value)}
+                  onChange={(e) => handleStatus(editing, e.target.value as ContentStatus)}
                   className="input"
                 >
                   {Object.entries(CONTENT_STATUS_LABELS).map(([key, label]) => (
