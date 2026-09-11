@@ -21,6 +21,7 @@ import { contactRoutes } from './modules/contact/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { workflowRoutes } from './modules/workflow/routes.js';
 import { melogRoutes } from './modules/melog/routes.js';
+import { brandRoutes } from './modules/brand/routes.js';
 import { startMelogScheduler } from './modules/melog/scheduler.js';
 import { AuthenticatedUser } from '@meos/shared';
 export type { AuthenticatedUser };
@@ -131,6 +132,8 @@ server.register(healthRoutes, { prefix: '/api/health' });
 
 // MeLog (生活数据汇聚)
 server.register(melogRoutes, { prefix: '/api/melog' });
+
+server.register(brandRoutes, { prefix: '/api/brand' });
 
 // 认证
 server.register(authRoutes, { prefix: '/api/auth' });
