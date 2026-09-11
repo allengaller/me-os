@@ -22,6 +22,7 @@ MeOS 需要「自媒体控制台」支撑 定位 → 创作 → 分发 →复盘
 - 出版物与自有产品走「作品库」独立建模
 - 指标手动周期录入，不接平台 API
 - 与认知板块软关联（`ContentItem.topicId → Topic`），创作复盘独立于生活反思
+- 品牌理念蓝本（定位/人设/语调等 BrandProfile 字段的取值来源）以 [docs/brand/DESIGN.md](../../brand/DESIGN.md) 为准，板块总览见 docs/BRAND.md
 
 ## 2. 非目标（一期不做）
 

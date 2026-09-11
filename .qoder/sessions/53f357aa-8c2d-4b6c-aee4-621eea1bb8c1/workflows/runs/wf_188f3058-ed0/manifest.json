@@ -1,0 +1,37 @@
+{
+  "runId": "wf_188f3058-ed0",
+  "workflowName": "deep-research",
+  "scriptPath": "/Users/allengaller/Documents/GitHub/allengaller/me-os/.qoder/sessions/53f357aa-8c2d-4b6c-aee4-621eea1bb8c1/workflows/scripts/deep-research-wf_188f3058-ed0.js",
+  "source": "built-in",
+  "args": "为个人品牌「曹亚仑｜基于极致工程的田野调查者」（做田野调查/平民访谈视频 + 极致工程方法论 + build in public，目标受众 25–40 岁知识工作者/工程师/独立创作者，中文内容市场）做全品类竞品深度调研。范围=品牌设计文档 §2.2 的五类对标：①鸡汤/成长博主 ②知识博主/课程 ③测评/评测博主 ④纪录片/纪实栏目 ⑤效率/AI 工具博主。每一类选 3-5 个代表性国内账号/栏目，从四个维度产出：定位与差异化（一句话定位、人设、受众、护城河）、内容与形式（栏目结构、选题方法论、视频形式/视觉、更新节奏、标题套路）、数据与增长（粉丝量级、单条爆款数据、冷启动路径、平台分布，标注数据时间与来源）、变现模式（商单/知识付费/To B/出版等实际路径）。最后用一节的篇幅横向对比五类，明确「田野调查 × 极致工程」定位的空白生态位与可借鉴打法。",
+  "meta": {
+    "name": "deep-research",
+    "description": "Deep research harness — fan-out web searches, fetch sources, adversarially verify claims, synthesize a cited report.",
+    "whenToUse": "When the user wants a deep, multi-source, fact-checked research report on any topic. BEFORE invoking, check if the question is specific enough to research directly — if underspecified (e.g., \"what car to buy\" without budget/use-case/region), ask 2-3 clarifying questions to narrow scope. Then pass the refined question as args, weaving the answers in.",
+    "phases": [
+      {
+        "title": "Scope",
+        "detail": "Decompose question (from args) into 5 search angles"
+      },
+      {
+        "title": "Search",
+        "detail": "5 parallel WebSearch agents, one per angle"
+      },
+      {
+        "title": "Fetch",
+        "detail": "URL-dedup, fetch top 15 sources, extract falsifiable claims"
+      },
+      {
+        "title": "Verify",
+        "detail": "3-vote adversarial verification per claim (need 2/3 refutes to kill)"
+      },
+      {
+        "title": "Synthesize",
+        "detail": "Merge semantic dupes, rank by confidence, cite sources"
+      }
+    ]
+  },
+  "createdAt": "2026-09-11T14:40:16.113Z",
+  "updatedAt": "2026-09-11T14:40:16.113Z",
+  "status": "running"
+}
