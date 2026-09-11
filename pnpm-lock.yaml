@@ -192,6 +192,18 @@ importers:
         specifier: ^1.1.3
         version: 1.6.1(@types/node@20.19.40)(@vitest/ui@1.6.1)(jsdom@29.1.1)
 
+  packages/connectors:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.7
+        version: 20.19.40
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^1.1.3
+        version: 1.6.1(@types/node@20.19.40)(@vitest/ui@1.6.1)(jsdom@29.1.1)
+
   packages/shared:
     devDependencies:
       typescript:

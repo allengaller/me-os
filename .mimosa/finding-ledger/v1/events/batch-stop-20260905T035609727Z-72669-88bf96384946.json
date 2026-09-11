@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260905T035609727Z-72669-88bf96384946",
+  "runId": "20260905T035609727Z-72669-88bf96384946",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "966780c2108d8e57cee0ed890663e37bdc59b32f",
+  "diffHash": "5707e5e4f7970700dcf46b0f718aec04f27f223bfb9474bc7cd72cc381c8f77e",
+  "rulesVersion": "unavailable",
+  "sessionHash": "eee3fdc04f12a06b547d29757c61c15b89668fb0da3629a501dab83c5632de34",
+  "reportRef": ".mimosa/reports/task-review-sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e-20260905T035609727Z-72669-88bf96384946.json",
+  "events": [],
+  "observedFindingIds": [],
+  "verifiedFiles": [
+    {
+      "file": "packages/api/src/modules/melog/llm.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "packages/api/src/modules/melog/service.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "packages/api/src/modules/melog/routes.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "packages/shared/src/index.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "packages/api/src/modules/melog/llm.test.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "packages/api/src/modules/melog/routes.test.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-09-05T03:56:11.159Z"
+}

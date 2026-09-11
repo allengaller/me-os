@@ -1,0 +1,870 @@
+{
+  "schema_version": "mimosa-task-review/v2",
+  "run_id": "20260905T033102227Z-27663-15ad5120628f",
+  "run_status": "inconclusive",
+  "errors": [
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/package.json",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/vitest.config.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/index.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/lib/ingest.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/lib/state.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/connectors/apple-health.test.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/connectors/apple-health.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/connectors/chatlog.test.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/connectors/src/connectors/chatlog.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "packages/api/src/modules/melog/scheduler.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/api/src/modules/melog/service.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/api/src/modules/melog/routes.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/cli.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/vitest.config.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/index.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/lib/ingest.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/lib/state.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/connectors/apple-health.test.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/connectors/apple-health.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/connectors/chatlog.test.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/connectors/src/connectors/chatlog.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/api/src/server.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/api/src/modules/melog/routes.test.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "packages/api/src/modules/melog/scheduler.ts",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "scan",
+      "target": "apps/web/src/pages/melog/Skills.tsx",
+      "reason": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT"
+    },
+    {
+      "stage": "supply-chain-check",
+      "target": ".",
+      "reason": "stop_budget_exhausted: focused supply-chain check was not run before the gate budget"
+    }
+  ],
+  "coverage": {
+    "schema_version": "mimosa-hook-coverage/v1",
+    "status": "partial",
+    "scope": "hook_observed_diff",
+    "baseline": {
+      "complete": true,
+      "captured_files": 144,
+      "candidate_limit": 5000,
+      "truncated": false,
+      "enumeration_error_count": 0,
+      "snapshot_error_count": 0,
+      "compensated_target_count": 7
+    },
+    "change_tracking": {
+      "touched_observed": 3,
+      "touched_retained": 3,
+      "truncated": false,
+      "bash_mutation": true,
+      "bash_discovered": 17,
+      "bash_discovery_limit": 80,
+      "bash_discovery_truncated": false
+    },
+    "candidates": {
+      "eligible_files": 17,
+      "selected_files": 17,
+      "limit": 20,
+      "truncated": false
+    },
+    "scanning": {
+      "required_files": 15,
+      "scanned_files": 0,
+      "skipped_files": 0,
+      "failed_files": 15,
+      "project_checks_required": 1,
+      "project_checks_completed": 0
+    },
+    "notification": {
+      "eligible_findings": 0,
+      "detailed_findings": 0,
+      "detail_limit": 3,
+      "truncated": false
+    },
+    "reason_counts": {
+      "baseline_snapshot_unreadable": 10,
+      "scanner_failed": 15,
+      "stop_budget_exhausted": 1,
+      "project_check_failed": 26
+    },
+    "reasons": [
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/package.json",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/vitest.config.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/index.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/lib/ingest.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/lib/state.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/apple-health.test.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/apple-health.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/chatlog.test.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/chatlog.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "packages/api/src/modules/melog/scheduler.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/service.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/routes.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/cli.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/vitest.config.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/index.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/lib/ingest.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/lib/state.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/apple-health.test.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/apple-health.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/chatlog.test.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/chatlog.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/api/src/server.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/routes.test.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/scheduler.ts",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "scanner_failed",
+        "stage": "scan",
+        "target": "apps/web/src/pages/melog/Skills.tsx",
+        "detail": "spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "stop_budget_exhausted",
+        "stage": "supply-chain-check",
+        "target": ".",
+        "detail": "focused supply-chain check was not run before the gate budget",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/package.json",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/vitest.config.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/index.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/lib/ingest.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/lib/state.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/apple-health.test.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/apple-health.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/chatlog.test.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/connectors/src/connectors/chatlog.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "packages/api/src/modules/melog/scheduler.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/service.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/routes.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/cli.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/vitest.config.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/index.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/lib/ingest.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/lib/state.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/apple-health.test.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/apple-health.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/chatlog.test.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/connectors/src/connectors/chatlog.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/api/src/server.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/routes.test.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "packages/api/src/modules/melog/scheduler.ts",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "apps/web/src/pages/melog/Skills.tsx",
+        "detail": "scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "supply-chain-check",
+        "target": ".",
+        "detail": "stop_budget_exhausted: focused supply-chain check was not run before the gate budget",
+        "affects_completion": true
+      }
+    ],
+    "reasons_truncated": false
+  },
+  "generated_at": "2026-09-05T03:31:02.227Z",
+  "session_id": "sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e",
+  "target": ".",
+  "revision": "966780c2108d8e57cee0ed890663e37bdc59b32f",
+  "rules_version": "unavailable",
+  "diff_hash": "fed3f16f7de1bb95b1da12e5e0445891fa946d08939f292d57015c8300ec4509",
+  "diff": {
+    "algorithm": "sha256",
+    "changed_file_count": 17,
+    "changed_files": [
+      {
+        "file": "apps/web/src/pages/melog/Skills.tsx",
+        "ranges": [
+          {
+            "start": 2,
+            "end": 2
+          },
+          {
+            "start": 29,
+            "end": 38
+          },
+          {
+            "start": 45,
+            "end": 58
+          },
+          {
+            "start": 68,
+            "end": 68
+          },
+          {
+            "start": 77,
+            "end": 77
+          },
+          {
+            "start": 80,
+            "end": 80
+          },
+          {
+            "start": 84,
+            "end": 88
+          },
+          {
+            "start": 116,
+            "end": 132
+          },
+          {
+            "start": 202,
+            "end": 220
+          }
+        ],
+        "before_hash": "03f30f332580efb10ebebecb720e9e94a55d845d2f26b8096e2616aee74f791d",
+        "after_hash": "56b260e3d7d167e2fab6a293f8b63860379c7a417435959f82ff94e3f9fe067b"
+      },
+      {
+        "file": "packages/api/src/modules/melog/routes.test.ts",
+        "ranges": [
+          {
+            "start": 5,
+            "end": 5
+          },
+          {
+            "start": 13,
+            "end": 13
+          },
+          {
+            "start": 30,
+            "end": 30
+          },
+          {
+            "start": 273,
+            "end": 383
+          }
+        ],
+        "before_hash": "8f6d051ef6adfde66b4e9873a7e61b46238aed5d693f393dbcd790206feef975",
+        "after_hash": "f33aa3b6378bdd290cd981788223ec0f301144f54dcb147c4c0c6d5eef4a5cfb"
+      },
+      {
+        "file": "packages/api/src/modules/melog/routes.ts",
+        "ranges": [
+          {
+            "start": 7,
+            "end": 7
+          },
+          {
+            "start": 11,
+            "end": 12
+          },
+          {
+            "start": 118,
+            "end": 129
+          },
+          {
+            "start": 369,
+            "end": 426
+          }
+        ],
+        "before_hash": "d2f3bf32d3eba51b85f99dd13559c3f14bce4b8d06e5370b90a492aff45731ba",
+        "after_hash": "22d9cf03ba2ad7a7a6ea210a49c7acfcf23802b6ca1acd9e686d972d749945e1"
+      },
+      {
+        "file": "packages/api/src/modules/melog/scheduler.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 87
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "87176b9486f9739e632840220fc89610913c60bb6f1e949472401746ddf10642"
+      },
+      {
+        "file": "packages/api/src/modules/melog/service.ts",
+        "ranges": [
+          {
+            "start": 2,
+            "end": 2
+          },
+          {
+            "start": 5,
+            "end": 5
+          },
+          {
+            "start": 184,
+            "end": 253
+          }
+        ],
+        "before_hash": "2322df42a09c7da04c0b3f4737bbd063c15ac2587710d90912c01f7a5d2c4586",
+        "after_hash": "616766a1fd7632faadfef3f2ccbf6abb8277cd912fa60e727539ea4549d1efc6"
+      },
+      {
+        "file": "packages/api/src/server.ts",
+        "ranges": [
+          {
+            "start": 24,
+            "end": 24
+          },
+          {
+            "start": 141,
+            "end": 141
+          }
+        ],
+        "before_hash": "7e269bcea5757768aa67d505d953728d07ab9ffb2cfff97d88150bd7139b9162",
+        "after_hash": "0d9924146878c61ac45b9f478c8a8dfc012d2ba9198066b2844a96cf6c01beb2"
+      },
+      {
+        "file": "packages/connectors/package.json",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 22
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "7f7b3690793632f67e7dc7ef9e440cbacda7d7da9ea3c81a632a1495d59edbfc"
+      },
+      {
+        "file": "packages/connectors/src/cli.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 173
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "a298d7069fd538838fd9e31292ae7373c44562a679e10a883362dee66bd1943e"
+      },
+      {
+        "file": "packages/connectors/src/connectors/apple-health.test.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 122
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "e779f2c29f44237bc42f7767e770cc0e87c01be5d370997803969e0c11ce2136"
+      },
+      {
+        "file": "packages/connectors/src/connectors/apple-health.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 206
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "b2475f122a6a5635a52300f95ed64294b71d020af2f4c2add8411f91ba039bdc"
+      },
+      {
+        "file": "packages/connectors/src/connectors/chatlog.test.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 117
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "048f9ccd789fdbe790703a9e6974fce8f95526dc3ae1d7a90ec289556a531e90"
+      },
+      {
+        "file": "packages/connectors/src/connectors/chatlog.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 220
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "7017ca9eabfaf65a6d296473350d1f7a68cccad777266d004868af9527bd4736"
+      },
+      {
+        "file": "packages/connectors/src/index.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 4
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "617dff90b3a9b8357aaa69137a8abec7ce9fe293f3d526a6ad45552d640c03c5"
+      },
+      {
+        "file": "packages/connectors/src/lib/ingest.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 103
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "412cbeccbf472aefeb54fc7ca7ae1ca21db247cf5bbaeb9bfb07866ffee616e4"
+      },
+      {
+        "file": "packages/connectors/src/lib/state.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 32
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "3c887b5cc49759ba0adf1fa8eccdd2851d58414f8b28bafde35d1c015d88fc8f"
+      },
+      {
+        "file": "packages/connectors/vitest.config.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 9
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "9b22c025e8f322f1c63dfbda1fc47f741ac706906eac556715d6dacc6da8b979"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "ranges": [
+          {
+            "start": 195,
+            "end": 206
+          }
+        ],
+        "before_hash": "35c449b4441226fd3a2f60adac8a066f5130859407a1caa0dcb2262b1642c8b1",
+        "after_hash": "3b8dc3ec0f6414b659a95f203f818c7412545da41662e12c6f04f49445c68a1a"
+      }
+    ]
+  },
+  "timing": {
+    "started_at": "2026-09-05T03:30:29.966Z",
+    "completed_at": "2026-09-05T03:31:02.227Z",
+    "duration_ms": 32261,
+    "measurement": "hook_wall_clock"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "model_calls": 0,
+    "measurement": "known-zero"
+  },
+  "telemetry": {
+    "schemaVersion": "mimosa-gate-telemetry/v1",
+    "profile": "gate",
+    "operation": "Stop",
+    "outcome": "partial/INCONCLUSIVE",
+    "latencyMs": 32261,
+    "peakMemoryBytes": 110772224,
+    "memoryMeasurement": "max-observed-process-rss",
+    "scannedFiles": 0,
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "measurement": "not-applicable"
+    },
+    "denyCount": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "total": 0,
+      "modelCalls": 0,
+      "measurement": "known-zero"
+    }
+  },
+  "finding_count": 0,
+  "rewake_finding_count": 0,
+  "evidence_boundary": {
+    "scan": "candidate",
+    "static_fix_verification": "observed_static_only",
+    "runtime_verification": "not_performed"
+  },
+  "finding_events": [],
+  "findings": [],
+  "artifacts": {
+    "immutable_report": ".mimosa/reports/task-review-sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e-20260905T033102227Z-27663-15ad5120628f.json",
+    "latest_report": ".mimosa/reports/task-review-sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e.json",
+    "history_summary": ".mimosa/history/run-20260905T033102227Z-27663-15ad5120628f.json"
+  }
+}

@@ -1,0 +1,76 @@
+import { prisma } from '../../lib/prisma.js';
+import { executeSkill } from './service.js';
+
+/**
+ * MeLog 技能定时调度器。
+ *
+ * 单进程内存轮询（60s）实现，适合本地优先的单用户部署：
+ * - kind=daily：每天在 dailyAt（HH:mm，服务器本地时区）运行
+ * - kind=interval：每 intervalHours 小时运行一次
+ * - 服务重启后错过的时点会在下一次轮询补跑一次（catch-up）
+ */
+
+const TICK_MS = 60 * 1000;
+
+export function computeNextRunAt(
+  kind: string,
+  dailyAt: string | null,
+  intervalHours: number | null,
+  from: Date,
+): Date | null {
+  if (kind === 'daily' && dailyAt) {
+    const [hours, minutes] = dailyAt.split(':').map(Number);
+    const next = new Date(from);
+    next.setHours(hours, minutes, 0, 0);
+    if (next.getTime() <= from.getTime()) {
+      next.setDate(next.getDate() + 1);
+    }
+    return next;
+  }
+  if (kind === 'interval' && intervalHours && intervalHours > 0) {
+    return new Date(from.getTime() + intervalHours * 3600 * 1000);
+  }
+  return null;
+}
+
+/** 执行所有到期的调度；测试可直接调用，无需等待轮询。 */
+export async function runDueMelogSchedules(now = new Date()): Promise<number> {
+  const due = await prisma.meLogSchedule.findMany({
+    where: { enabled: true, nextRunAt: { not: null, lte: now } },
+    include: { skill: { select: { slug: true } } },
+    take: 20,
+  });
+
+  let executed = 0;
+  for (const schedule of due) {
+    try {
+      await executeSkill(schedule.userId, schedule.skill.slug);
+      executed += 1;
+    } catch (error) {
+      // 单个调度失败不影响其他调度；下次运行时间照常推进，避免死循环重试
+      console.error(`[melog-scheduler] 调度 ${schedule.id} 运行失败:`, error);
+    }
+    const nextRunAt = computeNextRunAt(schedule.kind, schedule.dailyAt, schedule.intervalHours, now);
+    await prisma.meLogSchedule.update({
+      where: { id: schedule.id },
+      data: { lastRunAt: now, nextRunAt },
+    });
+  }
+  return executed;
+}
+
+/** 在 API 进程内启动轮询；仅由 server.ts 调用一次。 */
+export function startMelogScheduler(): void {
+  let ticking = false;
+  const tick = async () => {
+    if (ticking) return;
+    ticking = true;
+    try {
+      await runDueMelogSchedules();
+    } finally {
+      ticking = false;
+    }
+  };
+  setInterval(tick, TICK_MS);
+  console.log('✅ MeLog 技能调度器已启动（每 60 秒检查一次到期任务）');
+}

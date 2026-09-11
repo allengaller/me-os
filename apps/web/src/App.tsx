@@ -10,6 +10,7 @@ const ActionHub = lazy(() => import('./pages/ActionHub'));
 const CognitionHub = lazy(() => import('./pages/CognitionHub'));
 const ReflectionHub = lazy(() => import('./pages/ReflectionHub'));
 const ResourcesHub = lazy(() => import('./pages/ResourcesHub'));
+const MeLogHub = lazy(() => import('./pages/MeLogHub'));
 
 function PageLoader() {
   return (
@@ -69,6 +70,10 @@ function App() {
           {/* Resources */}
           <Route path="resources" element={<ResourcesHub />} />
           <Route path="resources/*" element={<Navigate to="/resources" replace />} />
+
+          {/* MeLog */}
+          <Route path="melog" element={<MeLogHub />} />
+          <Route path="melog/*" element={<Navigate to="/melog" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>

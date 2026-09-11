@@ -21,7 +21,6 @@ import { contactRoutes } from './modules/contact/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { workflowRoutes } from './modules/workflow/routes.js';
 import { melogRoutes } from './modules/melog/routes.js';
-import { startMelogScheduler } from './modules/melog/scheduler.js';
 import { AuthenticatedUser } from '@meos/shared';
 export type { AuthenticatedUser };
 
@@ -138,7 +137,6 @@ server.register(authRoutes, { prefix: '/api/auth' });
 const start = async () => {
   try {
     const port = Number(process.env.PORT) || 3001;
-    startMelogScheduler();
     await server.listen({ port, host: '0.0.0.0' });
     server.log.info(`Server running at http://localhost:${port}`);
   } catch (err) {

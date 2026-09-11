@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "mimosa-finding-history/v1",
+  "runId": "20260905T033102227Z-27663-15ad5120628f",
+  "runStatus": "inconclusive",
+  "errors": [
+    "baseline-read:packages/connectors/package.json: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/vitest.config.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/index.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/lib/ingest.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/lib/state.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/connectors/apple-health.test.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/connectors/apple-health.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/connectors/chatlog.test.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/connectors/src/connectors/chatlog.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "baseline-read:packages/api/src/modules/melog/scheduler.ts: baseline_snapshot_unreadable: file is missing from task baseline",
+    "scan:packages/api/src/modules/melog/service.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/api/src/modules/melog/routes.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/cli.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/vitest.config.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/index.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/lib/ingest.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/lib/state.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/connectors/apple-health.test.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/connectors/apple-health.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/connectors/chatlog.test.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/connectors/src/connectors/chatlog.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/api/src/server.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/api/src/modules/melog/routes.test.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:packages/api/src/modules/melog/scheduler.ts: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "scan:apps/web/src/pages/melog/Skills.tsx: scanner_failed: spawnSync /Users/allengaller/.hermes/node/bin/node ETIMEDOUT",
+    "supply-chain-check:.: stop_budget_exhausted: focused supply-chain check was not run before the gate budget"
+  ],
+  "target": ".",
+  "revision": "966780c2108d8e57cee0ed890663e37bdc59b32f",
+  "diffHash": "fed3f16f7de1bb95b1da12e5e0445891fa946d08939f292d57015c8300ec4509",
+  "rulesVersion": "unavailable",
+  "recordedAt": "2026-09-05T03:31:02.227Z",
+  "timing": {
+    "startedAt": "2026-09-05T03:30:29.966Z",
+    "completedAt": "2026-09-05T03:31:02.227Z",
+    "durationMs": 32261
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "modelCalls": 0,
+    "measurement": "known-zero"
+  },
+  "findings": {
+    "total": 0,
+    "bySeverity": {},
+    "byStatus": {}
+  },
+  "coverage": {
+    "status": "partial",
+    "reasonCounts": {
+      "baseline_snapshot_unreadable": 10,
+      "scanner_failed": 15,
+      "stop_budget_exhausted": 1,
+      "project_check_failed": 26
+    }
+  },
+  "evidenceBoundary": "static_only",
+  "immutableReport": ".mimosa/reports/task-review-sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e-20260905T033102227Z-27663-15ad5120628f.json"
+}

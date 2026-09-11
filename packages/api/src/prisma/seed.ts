@@ -135,6 +135,147 @@ async function main() {
   });
   console.log('✅ Created sample reflection');
 
+  // ==================== MeLog 示例数据 ====================
+
+  const melogWechat = await prisma.meLogSource.upsert({
+    where: { userId_adapter_name: { userId: user.id, adapter: 'chatlog', name: '微信聊天记录' } },
+    update: {},
+    create: {
+      userId: user.id,
+      name: '微信聊天记录',
+      category: 'im',
+      adapter: 'chatlog',
+      endpoint: 'http://localhost:5030',
+      status: 'connected',
+    },
+  });
+
+  const melogHealth = await prisma.meLogSource.upsert({
+    where: { userId_adapter_name: { userId: user.id, adapter: 'apple-health', name: 'Apple 健康' } },
+    update: {},
+    create: {
+      userId: user.id,
+      name: 'Apple 健康',
+      category: 'health',
+      adapter: 'apple-health',
+      status: 'disconnected',
+    },
+  });
+
+  const melogObsidian = await prisma.meLogSource.upsert({
+    where: { userId_adapter_name: { userId: user.id, adapter: 'obsidian', name: 'Obsidian 笔记' } },
+    update: {},
+    create: {
+      userId: user.id,
+      name: 'Obsidian 笔记',
+      category: 'note',
+      adapter: 'obsidian',
+      status: 'connected',
+    },
+  });
+
+  const now = Date.now();
+  const day = 24 * 3600 * 1000;
+  const melogEntries = [
+    {
+      sourceId: melogHealth.id,
+      externalId: 'seed-health-sleep-1',
+      category: 'health',
+      type: 'sleep',
+      title: '睡眠 6.2 小时',
+      payload: JSON.stringify({ value: 6.2, unit: 'hours' }),
+      occurredAt: new Date(now - 1 * day),
+    },
+    {
+      sourceId: melogHealth.id,
+      externalId: 'seed-health-exercise-1',
+      category: 'health',
+      type: 'exercise',
+      title: '跑步 30 分钟',
+      payload: JSON.stringify({ value: 30, unit: 'minutes' }),
+      tags: '跑步',
+      occurredAt: new Date(now - 1 * day),
+    },
+    {
+      sourceId: melogHealth.id,
+      externalId: 'seed-health-sleep-2',
+      category: 'health',
+      type: 'sleep',
+      title: '睡眠 7.8 小时',
+      payload: JSON.stringify({ value: 7.8, unit: 'hours' }),
+      occurredAt: new Date(now - 2 * day),
+    },
+    {
+      sourceId: melogWechat.id,
+      externalId: 'seed-im-1',
+      category: 'im',
+      type: 'chat-message',
+      title: '与老张的对话',
+      content: '最近项目上线压力有点大，感觉好累，晚上也睡不好',
+      actor: '我',
+      occurredAt: new Date(now - 1 * day + 3 * 3600 * 1000),
+    },
+    {
+      sourceId: melogWechat.id,
+      externalId: 'seed-im-2',
+      category: 'im',
+      type: 'chat-message',
+      title: '与妈妈的对话',
+      content: '这周末回家吃饭吗？给你做了你爱吃的红烧肉',
+      actor: '妈妈',
+      occurredAt: new Date(now - 2 * day),
+    },
+    {
+      sourceId: melogObsidian.id,
+      externalId: 'seed-note-1',
+      category: 'note',
+      type: 'markdown-doc',
+      title: 'MeLog 标准设计笔记',
+      content: '整理 MeLog Standard 的数据信封设计：统一时间线、幂等 ingest、技能清单格式。关键词：MCP、数据孤岛、local-first',
+      tags: 'melog,设计,架构',
+      occurredAt: new Date(now - 1 * day),
+    },
+    {
+      sourceId: melogObsidian.id,
+      externalId: 'seed-note-2',
+      category: 'note',
+      type: 'markdown-doc',
+      title: '读书笔记：卡片写作法',
+      content: '用卡片盒方法沉淀永久笔记，与 MeOS 的认知板块主题相关联',
+      tags: '读书,知识管理',
+      occurredAt: new Date(now - 3 * day),
+    },
+  ];
+
+  for (const entry of melogEntries) {
+    await prisma.meLogEntry.upsert({
+      where: { sourceId_externalId: { sourceId: entry.sourceId, externalId: entry.externalId! } },
+      update: {},
+      create: { ...entry, userId: user.id },
+    });
+  }
+
+  for (const source of [melogWechat, melogHealth, melogObsidian]) {
+    await prisma.meLogSource.update({
+      where: { id: source.id },
+      data: { entryCount: await prisma.meLogEntry.count({ where: { sourceId: source.id } }), lastSyncAt: new Date() },
+    });
+  }
+
+  // 安装内置技能（幂等）
+  for (const skill of [
+    { slug: 'health-insight', name: '健康洞察', description: '关联健康指标与聊天记录中的情绪表达，识别压力信号' },
+    { slug: 'knowledge-recall', name: '知识回顾', description: '总结本期笔记重点关键词，并关联聊天记录中的相关讨论' },
+    { slug: 'life-recap', name: '生活复盘', description: '把一段时间内的健康、沟通、笔记等条目汇总成每日复盘报告' },
+  ]) {
+    await prisma.meLogSkill.upsert({
+      where: { userId_slug: { userId: user.id, slug: skill.slug } },
+      update: {},
+      create: { userId: user.id, ...skill, version: '0.1.0', source: 'builtin' },
+    });
+  }
+  console.log('✅ Created MeLog demo data (3 sources, 7 entries, 3 builtin skills)');
+
   console.log('\n🎉 Database seed completed!');
   console.log('\n📋 Demo credentials:');
   console.log('   Email: demo@meos.app');

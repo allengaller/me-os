@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "mimosa-hook-status/v1",
+  "recordedAt": "2026-09-05T03:46:32.953Z",
+  "sessionId": "sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e",
+  "event": "PostToolUse",
+  "toolName": "Edit",
+  "file": "/Users/allengaller/Documents/GitHub/allengaller/me-os/apps/web/src/pages/melog/Skills.tsx",
+  "outcome": "inconclusive",
+  "coverage": "partial",
+  "findingCount": 0,
+  "durationMs": 46,
+  "hostState": "hook_complete",
+  "reportHint": ".mimosa/reports/"
+}

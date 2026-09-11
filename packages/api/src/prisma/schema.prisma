@@ -37,6 +37,11 @@ model User {
   contacts           Contact[]
   healthRecords      HealthRecord[]
   workflows          Workflow[]
+  melogSources       MeLogSource[]
+  melogEntries       MeLogEntry[]
+  melogSkills        MeLogSkill[]
+  melogRuns          MeLogRun[]
+  melogSchedules     MeLogSchedule[]
 }
 
 // ==================== 方向 (Direction) ====================
@@ -468,6 +473,122 @@ model HealthRecord {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type, recordedAt])
+}
+
+// ==================== MeLog (生活数据汇聚) ====================
+
+// 数据源：一个外部数据通道的注册表（如 chatlog 微信、Apple Health 导出、Obsidian）
+model MeLogSource {
+  id         String    @id @default(uuid())
+  userId     String
+  name       String
+  category   String // health | note | im | media | location | custom
+  adapter    String // 连接器标识：chatlog / apple-health / obsidian / notion / webhook ...
+  endpoint   String? // 连接器推送地址或本地服务地址（仅作登记，后端不会主动请求）
+  config     String? // JSON：连接器配置（脱敏后的）
+  status     String    @default("disconnected") // connected | disconnected | error
+  lastSyncAt DateTime?
+  syncCursor String? // 增量同步游标，由连接器维护
+  entryCount Int       @default(0)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries MeLogEntry[]
+
+  @@unique([userId, adapter, name])
+  @@index([userId, category])
+}
+
+// 条目：统一事件信封，MeLog Standard 的最小数据单元
+model MeLogEntry {
+  id         String   @id @default(uuid())
+  userId     String
+  sourceId   String
+  externalId String? // 来源系统中的唯一 ID，用于幂等去重
+  category   String // health | note | im | media | location | custom
+  type       String // 细分类型：sleep / steps / chat-message / markdown-doc ...
+  title      String
+  content    String?
+  payload    String? // JSON：结构化数据（如 {"steps":8000}）
+  tags       String? // 逗号分隔
+  actor      String? // 参与者/作者（IM 场景为发送者）
+  occurredAt DateTime
+  createdAt  DateTime @default(now())
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source MeLogSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([sourceId, externalId])
+  @@index([userId, occurredAt])
+  @@index([userId, category, occurredAt])
+  @@index([sourceId])
+}
+
+// 技能：对 MeLog 条目进行加工的预封装最佳实践
+model MeLogSkill {
+  id          String    @id @default(uuid())
+  userId      String
+  slug        String // health-insight / knowledge-recall / life-recap / 社区技能 slug
+  name        String
+  description String?
+  version     String    @default("0.1.0")
+  source      String    @default("builtin") // builtin | community | custom
+  config      String? // JSON：技能参数
+  isActive    Boolean   @default(true)
+  lastRunAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  runs MeLogRun[]
+  schedules MeLogSchedule[]
+
+  @@unique([userId, slug])
+  @@index([userId, isActive])
+}
+
+// 运行记录：技能执行一次的产出
+model MeLogRun {
+  id          String    @id @default(uuid())
+  userId      String
+  skillId     String
+  status      String    @default("succeeded") // running | succeeded | failed
+  periodStart DateTime?
+  periodEnd   DateTime?
+  summary     String?
+  result      String? // Markdown 报告
+  stats       String? // JSON：输入条目统计
+  entryIds    String? // JSON 数组：本次运行引用的条目 ID
+  createdAt   DateTime  @default(now())
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill MeLogSkill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([skillId])
+}
+
+// 技能定时调度：每天固定时间或按固定间隔运行一个技能
+model MeLogSchedule {
+  id            String    @id @default(uuid())
+  userId        String
+  skillId       String
+  kind          String    @default("daily") // daily（每天 dailyAt 时间） | interval（每 intervalHours 小时）
+  dailyAt       String? // HH:mm，kind=daily 时使用
+  intervalHours Int? // kind=interval 时使用
+  enabled       Boolean   @default(true)
+  lastRunAt     DateTime?
+  nextRunAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill MeLogSkill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@index([enabled, nextRunAt])
 }
 
 // ==================== 工作流 (Workflow) ====================

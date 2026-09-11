@@ -37,22 +37,26 @@ MeOS/
 ├── packages/
 │   ├── api/               # 后端API服务
 │   │   ├── src/
-│   │   │   ├── modules/  # 业务模块（按五维分组）
+│   │   │   ├── modules/  # 业务模块（五维板块 + melog）
 │   │   │   ├── prisma/   # 数据库模型（schema.prisma）
 │   │   │   ├── lib/     # 工具库
 │   │   │   └── server.ts
 │   │   └── package.json
+│   ├── connectors/        # MeLog 官方连接器（Apple Health / chatlog 兼容）
 │   └── shared/           # 共享类型和工具
 │       └── src/
 ├── apps/
 │   ├── web/              # Web前端应用（主端）
 │   │   ├── src/
 │   │   │   ├── components/
-│   │   │   ├── pages/
+│   │   │   ├── pages/    # 含 melog/（MeLog 板块页面）
 │   │   │   ├── hooks/
 │   │   │   └── stores/
 │   │   └── package.json
 │   └── chrome-extension/ # Chrome 扩展
+├── docs/
+│   ├── MELOG.md          # MeLog 板块总览
+│   └── melog/STANDARD.md # MeLog Standard 开放格式规范
 └── package.json
 ```
 
@@ -118,6 +122,7 @@ pnpm build
 - ✅ 基础反思记录（每日反思、周复盘）
 - ✅ 简单数据可视化（领域雷达图、时间曲线）
 - ✅ Web端完整功能
+- ✅ **MeLog 板块** — 汇聚健康/笔记/IM聊天记录到本地统一时间线，MCP 接入 + 内置技能（规则引擎，可选 LLM 生成）+ 官方连接器 + 定时调度，开放 [MeLog Standard](./docs/melog/STANDARD.md)，详见 [docs/MELOG.md](./docs/MELOG.md)
 - 🚧 移动端基础功能（计划中）
 
 ## 常见问题

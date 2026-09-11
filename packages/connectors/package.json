@@ -1,0 +1,22 @@
+{
+  "name": "@meos/melog-connectors",
+  "version": "0.2.0",
+  "description": "MeLog 官方连接器：把外部数据源按 MeLog Standard 推送到 MeOS",
+  "type": "module",
+  "bin": {
+    "melog-connector": "./dist/cli.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.7",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.3"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "mimosa-hook-status/v1",
+  "recordedAt": "2026-09-05T03:05:26.205Z",
+  "sessionId": "sess_1c0f85b8-2c62-4f03-b365-4918a15efc5e",
+  "event": "PostToolUse",
+  "toolName": "Edit",
+  "file": "modules/melog/routes.test.ts",
+  "outcome": "clear",
+  "coverage": "complete",
+  "findingCount": 0,
+  "durationMs": 9,
+  "hostState": "hook_complete",
+  "reportHint": ".mimosa/reports/"
+}

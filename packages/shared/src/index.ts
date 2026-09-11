@@ -303,6 +303,85 @@ export interface Subscription {
   updatedAt: string;
 }
 
+// ==================== MeLog (生活数据汇聚) ====================
+
+export type MeLogCategory = 'health' | 'note' | 'im' | 'media' | 'location' | 'custom';
+
+export const MELOG_CATEGORIES: MeLogCategory[] = ['health', 'note', 'im', 'media', 'location', 'custom'];
+
+export interface MeLogSource {
+  id: string;
+  userId: string;
+  name: string;
+  category: MeLogCategory;
+  adapter: string;
+  endpoint?: string;
+  config?: string;
+  status: 'connected' | 'disconnected' | 'error';
+  lastSyncAt?: string;
+  syncCursor?: string;
+  entryCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** MeLog Standard 统一事件信封（MeLogEntry） */
+export interface MeLogEntry {
+  id: string;
+  userId: string;
+  sourceId: string;
+  externalId?: string;
+  category: MeLogCategory;
+  type: string;
+  title: string;
+  content?: string;
+  payload?: string;
+  tags?: string;
+  actor?: string;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface MeLogSkill {
+  id: string;
+  userId: string;
+  slug: string;
+  name: string;
+  description?: string;
+  version: string;
+  source: 'builtin' | 'community' | 'custom';
+  config?: string;
+  isActive: boolean;
+  lastRunAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeLogRun {
+  id: string;
+  userId: string;
+  skillId: string;
+  status: 'running' | 'succeeded' | 'failed';
+  periodStart?: string;
+  periodEnd?: string;
+  summary?: string;
+  result?: string;
+  stats?: string;
+  entryIds?: string;
+  createdAt: string;
+}
+
+export interface MeLogOverview {
+  totalEntries: number;
+  last7Days: number;
+  last30Days: number;
+  byCategory: { category: string; count: number; last7Days: number }[];
+  sources: { total: number; connected: number; error: number }[];
+  latestRuns: MeLogRun[];
+  llm: { configured: boolean; model?: string };
+}
+
 // ==================== API 响应类型 ====================
 
 export interface ApiResponse<T> {

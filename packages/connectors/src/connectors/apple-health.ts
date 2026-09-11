@@ -1,0 +1,206 @@
+import { createInterface } from 'node:readline';
+import type { IngestEntryInput } from '../lib/ingest.js';
+
+/**
+ * Apple Health 导出连接器（export.xml / export.zip）。
+ *
+ * Apple 的导出是扁平的 <Record .../> 与 <Workout .../> 列表，
+ * 这里按行流式扫描属性，聚合成“按天”的健康条目后推送。
+ * 天级聚合 + 固定 externalId，重复导入自动幂等更新。
+ */
+
+export interface AppleHealthRecord {
+  kind: 'record' | 'workout';
+  type?: string;
+  value?: string;
+  unit?: string;
+  startDate?: string;
+  endDate?: string;
+  sourceName?: string;
+  workoutActivityType?: string;
+  duration?: string;
+}
+
+const TAG_RE = /<(Record|Workout)\b([^>]*?)\/?>/g;
+const ATTR_RE = /([A-Za-z0-9]+)="([^"]*)"/g;
+
+/** 把 Apple 的 "2026-09-03 08:00:00 +0800" 解析为 Date（兼容 ISO 与无冒号时区） */
+export function parseAppleDate(value: string): Date | null {
+  const match = value
+    .trim()
+    .match(/^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:\s*([+-]\d{2}):?(\d{2}))?$/);
+  if (!match) return null;
+  const offset = match[3] ? `${match[3]}:${match[4]}` : '';
+  const date = new Date(`${match[1]}T${match[2]}${offset}`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function dayKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export async function parseAppleHealthExport(stream: NodeJS.ReadableStream): Promise<AppleHealthRecord[]> {
+  const rl = createInterface({ input: stream });
+  const records: AppleHealthRecord[] = [];
+
+  for await (const line of rl) {
+    if (!line.includes('<Record') && !line.includes('<Workout')) continue;
+    for (const match of line.matchAll(TAG_RE)) {
+      const attrs: Record<string, string> = {};
+      for (const attr of match[2].matchAll(ATTR_RE)) {
+        attrs[attr[1]] = attr[2];
+      }
+      records.push({
+        kind: match[1] === 'Workout' ? 'workout' : 'record',
+        type: attrs.type,
+        value: attrs.value,
+        unit: attrs.unit,
+        startDate: attrs.startDate,
+        endDate: attrs.endDate,
+        sourceName: attrs.sourceName,
+        workoutActivityType: attrs.workoutActivityType,
+        duration: attrs.duration,
+      });
+    }
+  }
+  return records;
+}
+
+export interface AppleHealthEntry extends IngestEntryInput {
+  externalId: string;
+  category: 'health';
+}
+
+export interface AggregateOptions {
+  /** 回溯天数（相对 until），默认 30 */
+  days?: number;
+  /** 窗口终点，默认现在 */
+  until?: Date;
+}
+
+export function aggregateDaily(records: AppleHealthRecord[], options: AggregateOptions = {}): AppleHealthEntry[] {
+  const until = options.until || new Date();
+  const from = new Date(until.getTime() - (options.days ?? 30) * 24 * 3600 * 1000);
+
+  interface DayBucket {
+    sleepHours: number;
+    sleepStages: Record<string, number>;
+    steps: number;
+    heartRates: number[];
+    weight: { value: number; at: Date } | null;
+  }
+  const days = new Map<string, DayBucket>();
+  const workouts: AppleHealthEntry[] = [];
+
+  const bucketFor = (key: string): DayBucket => {
+    const existing = days.get(key);
+    if (existing) return existing;
+    const bucket: DayBucket = { sleepHours: 0, sleepStages: {}, steps: 0, heartRates: [], weight: null };
+    days.set(key, bucket);
+    return bucket;
+  };
+
+  for (const record of records) {
+    if (record.kind === 'workout') {
+      const start = record.startDate ? parseAppleDate(record.startDate) : null;
+      if (!start || start < from || start > until) continue;
+      const activity = (record.workoutActivityType || 'Workout').replace('HKWorkoutActivityType', '');
+      const minutes = Math.round(Number(record.duration || 0) / 60);
+      workouts.push({
+        externalId: `ah-exercise-${start.getTime()}-${activity}`,
+        category: 'health',
+        type: 'exercise',
+        title: `${activity} ${minutes} 分钟`,
+        payload: JSON.stringify({ value: minutes, unit: 'minutes', activityType: activity }),
+        occurredAt: `${dayKey(start)}T12:00:00`,
+      });
+      continue;
+    }
+
+    const start = record.startDate ? parseAppleDate(record.startDate) : null;
+    if (!start || start < from || start > until) continue;
+    const key = dayKey(start);
+    const value = Number(record.value);
+
+    switch (record.type) {
+      case 'HKCategoryTypeIdentifierSleepAnalysis': {
+        if (!record.startDate || !record.endDate || !record.value?.includes('Asleep')) break;
+        const end = parseAppleDate(record.endDate);
+        if (!end) break;
+        const hours = Math.max(0, (end.getTime() - start.getTime()) / 3600e3);
+        const stage = record.value.replace('HKCategoryValueSleepAnalysis', '') || 'Asleep';
+        const bucket = bucketFor(key);
+        bucket.sleepHours += hours;
+        bucket.sleepStages[stage] = Number(((bucket.sleepStages[stage] || 0) + hours).toFixed(2));
+        break;
+      }
+      case 'HKQuantityTypeIdentifierStepCount':
+        if (Number.isFinite(value)) bucketFor(key).steps += value;
+        break;
+      case 'HKQuantityTypeIdentifierHeartRate':
+        if (Number.isFinite(value)) bucketFor(key).heartRates.push(value);
+        break;
+      case 'HKQuantityTypeIdentifierBodyMass':
+        if (Number.isFinite(value)) {
+          const bucket = bucketFor(key);
+          if (!bucket.weight || start > bucket.weight.at) bucket.weight = { value, at: start };
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  const entries: AppleHealthEntry[] = [...workouts];
+
+  for (const [key, bucket] of days) {
+    const occurredAt = `${key}T12:00:00`;
+    if (bucket.sleepHours > 0) {
+      const hours = Number(bucket.sleepHours.toFixed(1));
+      entries.push({
+        externalId: `ah-sleep-${key}`,
+        category: 'health',
+        type: 'sleep',
+        title: `睡眠 ${hours} 小时`,
+        payload: JSON.stringify({ value: hours, unit: 'hours', sleepStages: bucket.sleepStages }),
+        occurredAt,
+      });
+    }
+    if (bucket.steps > 0) {
+      entries.push({
+        externalId: `ah-steps-${key}`,
+        category: 'health',
+        type: 'steps',
+        title: `步数 ${bucket.steps} 步`,
+        payload: JSON.stringify({ value: bucket.steps, unit: 'count' }),
+        occurredAt,
+      });
+    }
+    if (bucket.heartRates.length > 0) {
+      const avg = Math.round(bucket.heartRates.reduce((a, b) => a + b, 0) / bucket.heartRates.length);
+      entries.push({
+        externalId: `ah-heart-rate-${key}`,
+        category: 'health',
+        type: 'heart-rate',
+        title: `心率均值 ${avg} bpm（${bucket.heartRates.length} 条采样）`,
+        payload: JSON.stringify({ value: avg, unit: 'bpm', samples: bucket.heartRates.length }),
+        occurredAt,
+      });
+    }
+    if (bucket.weight) {
+      entries.push({
+        externalId: `ah-weight-${key}`,
+        category: 'health',
+        type: 'weight',
+        title: `体重 ${bucket.weight.value} kg`,
+        payload: JSON.stringify({ value: bucket.weight.value, unit: 'kg' }),
+        occurredAt,
+      });
+    }
+  }
+
+  return entries.sort((a, b) => String(a.occurredAt).localeCompare(String(b.occurredAt)));
+}

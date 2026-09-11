@@ -36,6 +36,11 @@ const navItems: NavItem[] = [
     path: '/resources',
     icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
   },
+  {
+    label: 'MeLog',
+    path: '/melog',
+    icon: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  },
 ];
 
 export default function Layout() {
