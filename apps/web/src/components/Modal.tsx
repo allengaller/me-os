@@ -9,6 +9,17 @@ interface ModalProps {
   maxWidth?: string;
 }
 
+// Tailwind max-w 标度到实际宽度的映射（组件使用内联样式，不经 Tailwind 编译）
+const MAX_WIDTHS: Record<string, string> = {
+  sm: '24rem',
+  md: '28rem',
+  lg: '32rem',
+  xl: '36rem',
+  '2xl': '42rem',
+  '3xl': '48rem',
+  '4xl': '56rem',
+};
+
 export default function Modal({ open, onClose, title, children, maxWidth = 'max-w-md' }: ModalProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +59,7 @@ export default function Modal({ open, onClose, title, children, maxWidth = 'max-
       <div
         className="relative bg-white w-full rounded-xl overflow-hidden"
         style={{
-          maxWidth: `var(--radius-${maxWidth.replace('max-w-', '')})`,
+          maxWidth: MAX_WIDTHS[maxWidth.replace('max-w-', '')] ?? maxWidth,
           boxShadow: 'var(--shadow-xl)',
           animation: 'scaleIn 250ms var(--ease-out)',
         }}

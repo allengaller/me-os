@@ -11,6 +11,7 @@ const CognitionHub = lazy(() => import('./pages/CognitionHub'));
 const ReflectionHub = lazy(() => import('./pages/ReflectionHub'));
 const ResourcesHub = lazy(() => import('./pages/ResourcesHub'));
 const MeLogHub = lazy(() => import('./pages/MeLogHub'));
+const BrandHub = lazy(() => import('./pages/BrandHub'));
 
 function PageLoader() {
   return (
@@ -74,6 +75,10 @@ function App() {
           {/* MeLog */}
           <Route path="melog" element={<MeLogHub />} />
           <Route path="melog/*" element={<Navigate to="/melog" replace />} />
+
+          {/* Brand */}
+          <Route path="brand" element={<BrandHub />} />
+          <Route path="brand/*" element={<Navigate to="/brand" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>
