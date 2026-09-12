@@ -210,6 +210,7 @@ MeOS 需要「自媒体控制台」支撑 定位 → 创作 → 分发 →复盘
    - 所属内容 `publishedAt` 为空 → 填充分发发布时间
    - 所属内容 `status` 非 `archived` → 置为 `published`
 2. **空壳 profile**：GET profile 不存在时返回品牌蓝本默认值（取值与实现见 `packages/api/src/modules/brand/constants.ts`，来源 docs/brand/DESIGN.md §0，不写库）；PUT 时 upsert，create 路径合并蓝本默认值。
+3. **内容支柱预置（待确认，暂不实现）**：profile 首次保存时是否默认生成 DESIGN.md §6.1 的四根内容支柱（极致工程方法论 / 田野调查实录 / 自我调教日志 / 公开构建）。目前按「用户自建」处理，确认需求后再实现。
 
 ## 7. 错误处理
 
