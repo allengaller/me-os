@@ -1,19 +1,21 @@
 import { useSearchParams } from 'react-router-dom';
-import { LayoutDashboard, Gem, GitBranch, Radio, Package } from 'lucide-react';
+import { LayoutDashboard, Gem, GitBranch, Radio, Package, BarChart3 } from 'lucide-react';
 import MethodologyCard from '../components/MethodologyCard';
 import Overview from './brand/Overview';
 import Profile from './brand/Profile';
 import Pipeline from './brand/Pipeline';
 import Channels from './brand/Channels';
 import Works from './brand/Works';
+import Analytics from './brand/Analytics';
 
-type TabKey = 'overview' | 'profile' | 'pipeline' | 'channels' | 'works';
+type TabKey = 'overview' | 'profile' | 'pipeline' | 'channels' | 'works' | 'analytics';
 
 const TABS: { key: TabKey; label: string; icon: typeof LayoutDashboard }[] = [
   { key: 'overview', label: '总览', icon: LayoutDashboard },
   { key: 'profile', label: '品牌资产', icon: Gem },
   { key: 'pipeline', label: '内容流水线', icon: GitBranch },
   { key: 'channels', label: '渠道与数据', icon: Radio },
+  { key: 'analytics', label: '数据仪表', icon: BarChart3 },
   { key: 'works', label: '作品库', icon: Package },
 ];
 
@@ -79,6 +81,7 @@ export default function BrandHub() {
       {activeTab === 'profile' && <Profile />}
       {activeTab === 'pipeline' && <Pipeline />}
       {activeTab === 'channels' && <Channels />}
+      {activeTab === 'analytics' && <Analytics />}
       {activeTab === 'works' && <Works />}
     </div>
   );

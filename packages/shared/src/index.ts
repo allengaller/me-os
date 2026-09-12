@@ -524,6 +524,23 @@ export interface BrandOverview {
     week: { followersDelta: number; views: number; likes: number; comments: number; shares: number };
     month: { followersDelta: number; views: number; likes: number; comments: number; shares: number };
   };
+  /** 最近 12 周各周增量（7 天一桶，index 0 = 最近一周） */
+  weeklyTrend: {
+    label: string;
+    followersDelta: number;
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+  }[];
+  /** 近 30 天内容产出摘要：发布总数、环比、类型分布、支柱分布 */
+  contentDigest: {
+    total: number;
+    previousTotal: number;
+    delta: number;
+    byType: Record<string, number>;
+    byPillar: { id: string; name: string; count: number }[];
+  };
 }
 
 // ==================== API 响应类型 ====================

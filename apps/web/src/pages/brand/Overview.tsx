@@ -5,6 +5,7 @@ import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import type { BrandOverview, ContentStatus } from '@meos/shared';
+import { CONTENT_TYPE_LABELS } from './constants';
 
 const FUNNEL: { key: ContentStatus; label: string }[] = [
   { key: 'idea', label: '选题' },
@@ -129,6 +130,54 @@ export default function Overview() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-sm font-medium mb-3">内容产出汇总（近 30 天）</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="card p-4">
+            <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+              发布总数
+            </p>
+            <p className="text-2xl" style={{ color: 'var(--color-text-primary)' }}>
+              {data.contentDigest.total}
+              <span
+                className="text-xs ml-2"
+                style={{ color: data.contentDigest.delta >= 0 ? '#10b981' : '#ef4444' }}
+              >
+                {data.contentDigest.delta >= 0 ? '+' : ''}
+                {data.contentDigest.delta} 较上一周期
+              </span>
+            </p>
+            {data.contentDigest.total > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {Object.entries(data.contentDigest.byType).map(([type, count]) => (
+                  <span key={type} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                    {CONTENT_TYPE_LABELS[type] ?? type} · {count}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="card p-4">
+            <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+              支柱分布
+            </p>
+            {data.contentDigest.byPillar.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                近 30 天暂无已发布内容
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {data.contentDigest.byPillar.map((pillar) => (
+                  <span key={pillar.id} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                    {pillar.name} · {pillar.count}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
