@@ -4,6 +4,7 @@ export * from './lib/brand-client.js';
 export * from './connectors/apple-health.js';
 export * from './connectors/chatlog.js';
 export * from './connectors/dida365.js';
+export * from './connectors/speak.js';
 export * as bilibili from './connectors/bilibili.js';
 export * as youtube from './connectors/youtube.js';
 export * as github from './connectors/github.js';

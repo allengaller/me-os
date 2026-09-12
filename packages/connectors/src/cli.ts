@@ -7,6 +7,7 @@ import { loadState, resolveStateDir, saveState } from './lib/state.js';
 import { aggregateDaily, parseAppleHealthExport } from './connectors/apple-health.js';
 import { runChatlogConnector } from './connectors/chatlog.js';
 import { collectDida365Entries, runDida365Connector } from './connectors/dida365.js';
+import { buildSpeakEntries, parseMetrics } from './connectors/speak.js';
 import { runBilibiliConnector } from './connectors/bilibili.js';
 import { runYouTubeConnector } from './connectors/youtube.js';
 import { runGitHubConnector } from './connectors/github.js';
@@ -21,6 +22,7 @@ import { runImportConnector } from './connectors/import.js';
  *   melog-connector apple-health  --export ~/Downloads/export.zip [--days 30] [--source-name Apple 健康]
  *   melog-connector dida365       [--days 30] [--token <t>] [--no-habits] [--no-tasks]
  *                                 [--api-base https://api.dida365.com] [--dry-run]
+ *   melog-connector speak         --text "今天 8500 步，睡眠 6 小时 40 分" [--date YYYY-MM-DD]
  *   melog-connector brand-bilibili --mid <mid> [--channel-id <id>] [--max-videos 100]
  *                                 [--cookie <cookie>] [--dry-run]
  *   melog-connector brand-youtube --channel-id <UCxxx> [--channel-id <id>] [--max-videos 50]
@@ -100,6 +102,7 @@ async function main(): Promise<number> {
         '  chatlog        同步 chatlog 兼容服务的聊天记录（⚠️ 使用前自行确认数据来源合法）',
         '  apple-health   解析 Apple Health 导出（export.xml / export.zip）',
         '  dida365        同步滴答清单的习惯打卡与任务备注（Web 私有接口，Cookie t token）',
+        '  speak          一句话口述录入健康指标（无 API 设备的半自动通道）',
         '  brand-bilibili 拉取 B站公开数据（粉丝/播放/点赞等）写入品牌快照',
         '  brand-youtube  拉取 YouTube Data API v3 数据（订阅/视频指标）写入品牌快照',
         '  brand-github   拉取 GitHub 仓库指标（stars/forks/issues）写入品牌快照',
@@ -114,6 +117,7 @@ async function main(): Promise<number> {
         'health 选项：   --export <path>（export.xml 或 export.zip）',
         'dida365 选项：  --token <t>（默认环境变量 DIDA365_TOKEN）  --api-base <url>',
         '               --no-habits  --no-tasks  --dry-run',
+        'speak 选项：    --text <一句话>  --date <YYYY-MM-DD>（默认今天）  --dry-run',
         'brand-bilibili 选项：--mid <mid>（space.bilibili.com/{mid}）  --channel-id <id>',
         '               --max-videos <n>  --cookie <cookie>（默认环境变量 BILIBILI_COOKIE）  --dry-run',
         'brand-youtube 选项： --channel-id <UCxxx>（YouTube 频道 ID）  --api-key <key>（默认 YOUTUBE_API_KEY）',
@@ -126,9 +130,9 @@ async function main(): Promise<number> {
     return 0;
   }
 
-  if (!['chatlog', 'apple-health', 'dida365', 'brand-bilibili', 'brand-youtube', 'brand-github', 'brand-import'].includes(command)) {
+  if (!['chatlog', 'apple-health', 'dida365', 'speak', 'brand-bilibili', 'brand-youtube', 'brand-github', 'brand-import'].includes(command)) {
     console.error(
-      `未知命令：${command}（可用：chatlog / apple-health / dida365 / brand-bilibili / brand-youtube / brand-github / brand-import）`,
+      `未知命令：${command}（可用：chatlog / apple-health / dida365 / speak / brand-bilibili / brand-youtube / brand-github / brand-import）`,
     );
     return 1;
   }
@@ -209,6 +213,53 @@ async function main(): Promise<number> {
     console.log(
       `✅ 滴答清单：习惯 ${result.habits} 个，打卡 ${result.habitEntries.length} 条，备注 ${result.tasks} 条（窗口 ${result.from} ~ ${result.to}）；新增 ${result.created}，更新 ${result.updated}，跳过 ${result.skipped}`,
     );
+    return 0;
+  }
+
+  if (command === 'speak') {
+    const text = flags.text;
+    if (!text || text.startsWith('-')) {
+      console.error('缺少 --text <一句话>，例如：--text "今天 8500 步，跑步 5 公里，睡眠 6 小时"');
+      return 1;
+    }
+    const now = new Date();
+    const dateKey =
+      flags.date ||
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+      console.error(`--date 格式应为 YYYY-MM-DD，收到：${dateKey}`);
+      return 1;
+    }
+
+    const metrics = parseMetrics(text);
+    const entries = buildSpeakEntries(text, dateKey);
+    const summary = metrics
+      .map((m) => `${m.raw}`)
+      .join(' · ');
+    console.log(
+      `📝 ${dateKey}：解析到 ${metrics.length} 个指标${metrics.length > 0 ? `（${summary}）` : '，按原文 note 兜底保存'}`,
+    );
+    if (flags['dry-run']) {
+      for (const entry of entries) {
+        console.log(JSON.stringify(entry, null, 2));
+      }
+      return 0;
+    }
+    const grouped = new Map<string, typeof entries>();
+    for (const entry of entries) {
+      const category = entry.category;
+      if (!grouped.has(category)) grouped.set(category, []);
+      grouped.get(category)!.push(entry);
+    }
+    let created = 0;
+    let updated = 0;
+    for (const [category, group] of grouped) {
+      const result = await client.ingest('melog-speak', '每日口述', category as MeLogEntryCategory, group);
+      created += result.created;
+      updated += result.updated;
+    }
+    await saveState(stateDir, stateName, { lastRunAt: new Date().toISOString(), dateKey });
+    console.log(`✅ 口述录入：新增 ${created}，更新 ${updated}`);
     return 0;
   }
 
