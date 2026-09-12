@@ -1,9 +1,14 @@
 // MeOS Chrome Extension - Popup Script
 
+const MEOS_APP_URLS = ['http://localhost:3000', 'http://localhost:5173', 'https://meos.app'];
+const API_BASE = 'http://localhost:3001/api';
+
 document.addEventListener('DOMContentLoaded', () => {
   const statsContainer = document.getElementById('stats');
   const openBtn = document.getElementById('open-meos');
   const quickAddBtn = document.getElementById('quick-add');
+  const todoInput = document.getElementById('todo-title');
+  const todoStatus = document.getElementById('todo-status');
 
   // Default stats
   let stats = {
@@ -37,11 +42,68 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
+  function setStatus(message, isError) {
+    todoStatus.textContent = message;
+    todoStatus.className = 'todo-status' + (isError ? ' error' : '');
+  }
+
+  function getToken(cb) {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (tab && tab.url && MEOS_APP_URLS.some((u) => tab.url.startsWith(u))) {
+        chrome.tabs.sendMessage(tab.id, { type: 'GET_MEOS_TOKEN' }, (res) => {
+          if (res && res.token) return cb(res.token);
+          cb(null);
+        });
+        return;
+      }
+      chrome.storage.local.get(['meos_token'], (result) => cb(result.meos_token || null));
+    });
+  }
+
+  function createTodo(title) {
+    setStatus('添加中…', false);
+    getToken((token) => {
+      if (!token) {
+        setStatus('未登录：先打开一次 MeOS 页面（localhost:3000）再试', true);
+        return;
+      }
+      fetch(`${API_BASE}/todos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, source: 'extension' }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          setStatus('已添加 ✓', false);
+          todoInput.value = '';
+        })
+        .catch(() => {
+          setStatus('添加失败，请确认后端已启动（localhost:3001）', true);
+        });
+    });
+  }
+
   openBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:5173' });
+    chrome.tabs.create({ url: 'http://localhost:3000' });
   });
 
   quickAddBtn.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:5173/action?new=todo' });
+    const title = todoInput.value.trim();
+    if (!title) {
+      todoInput.focus();
+      return;
+    }
+    createTodo(title);
+  });
+
+  todoInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const title = todoInput.value.trim();
+    if (!title) return;
+    createTodo(title);
   });
 });

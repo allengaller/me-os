@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { localDB } from './localDB';
 
 const isChromeExtension = typeof chrome !== 'undefined' && chrome.storage;
+const useLocalMode = isChromeExtension || import.meta.env.VITE_USE_LOCAL === '1';
 
 const remoteApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
@@ -282,5 +283,5 @@ const routeHandlers: Record<string, (method: string, id: string, segments: strin
   },
 };
 
-export default isChromeExtension ? localDBAdapter : remoteApi;
-export { localDB };
+export default useLocalMode ? localDBAdapter : remoteApi;
+export { localDB, useLocalMode };

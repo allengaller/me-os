@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MethodologyCard from '../../components/MethodologyCard';
 import Subscriptions from './Subscriptions';
 import DevEnvironment from './DevEnvironment';
 
@@ -48,6 +49,8 @@ export default function Assets() {
           开发环境
         </button>
       </div>
+
+      <MethodologyCard page={`resources:${activeTab}`} />
 
       {activeTab === 'subscriptions' ? <Subscriptions /> : <DevEnvironment />}
     </div>

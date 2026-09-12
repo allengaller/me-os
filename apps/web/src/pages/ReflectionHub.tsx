@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Sun, CalendarDays } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Daily from './reflection/Daily';
 import Review from './reflection/Review';
 
@@ -66,6 +67,8 @@ export default function ReflectionHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`reflection:${activeTab}`} />
 
       {activeTab === 'daily' ? <Daily /> : <Review />}
     </div>

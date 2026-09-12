@@ -27,6 +27,8 @@
 | [brand/OPERATIONS.md](./brand/OPERATIONS.md) | 自媒体运营手册：生产/拍摄/发布/数据/复盘/增长/合规/工具栈 SOP |
 | [brand/COPY.md](./brand/COPY.md) | 文案资产库：平台简介/片尾口播/邀约话术/更正与商单模板 |
 | [brand/COMPETITOR_RESEARCH.md](./brand/COMPETITOR_RESEARCH.md) | 竞品深度调研：五类竞品拆解/横向对比/空白生态位/可借鉴打法（DESIGN §2.2/§2.4 证据支撑） |
+| [brand/DATA_SOURCES.md](./brand/DATA_SOURCES.md) | 指标数据接入调研：官方 API/登录态/插件/爬虫估算四模式与各平台映射，快照连接器用法 |
+| [brand/SNAPSHOTS.md](./brand/SNAPSHOTS.md) | 品牌快照定时任务：脚本配置、cron 示例、故障排查 |
 | [brand/BUSINESS.md](./brand/BUSINESS.md) | 一人公司经营手册：商业模式/产品线/定价/财务法务/资产安全/风险/季度节奏 |
 | [self-media/](./self-media/README.md) | 自媒体实战知识库：实战总纲/9 平台手册/运营方法论大全/纪录片话题预判 |
 | [superpowers/specs/2026-09-11-brand-console-design.md](./superpowers/specs/2026-09-11-brand-console-design.md) | 品牌板块实现设计：数据模型/API/前端 |

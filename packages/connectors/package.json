@@ -1,7 +1,7 @@
 {
   "name": "@meos/melog-connectors",
   "version": "0.2.0",
-  "description": "MeLog 官方连接器：把外部数据源按 MeLog Standard 推送到 MeOS",
+  "description": "MeOS 官方连接器：MeLog 条目 + 品牌渠道快照（零运行时依赖）",
   "type": "module",
   "bin": {
     "melog-connector": "./dist/cli.js"

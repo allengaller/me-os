@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Target, Compass, Flag, GitBranch } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Vision from './direction/Vision';
 import Domains from './direction/Domains';
 import Goals from './direction/Goals';
@@ -70,6 +71,8 @@ export default function DirectionHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`direction:${activeTab}`} />
 
       {activeTab === 'vision' && <Vision />}
       {activeTab === 'domains' && <Domains />}

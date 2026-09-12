@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Activity, Plug, Sparkles, FileBadge } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Timeline from './melog/Timeline';
 import Sources from './melog/Sources';
 import Skills from './melog/Skills';
@@ -70,6 +71,8 @@ export default function MeLogHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`melog:${activeTab}`} />
 
       {activeTab === 'timeline' && <Timeline />}
       {activeTab === 'sources' && <Sources />}

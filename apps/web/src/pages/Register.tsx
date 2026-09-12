@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import api from '../lib/api';
+import api, { useLocalMode } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 
 export default function Register() {
@@ -33,7 +33,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-100 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+      <div className="max-w-md w-full bg-[var(--color-surface)] rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">创建账号</h1>
           <p className="text-gray-600">开始你的人生管理之旅</p>
@@ -107,6 +107,12 @@ export default function Register() {
             立即登录
           </Link>
         </p>
+
+        {useLocalMode && (
+          <p className="mt-3 text-center text-xs text-gray-400">
+            本地模式下，账号与数据仅保存在当前浏览器中
+          </p>
+        )}
       </div>
     </div>
   );

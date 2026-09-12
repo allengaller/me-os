@@ -65,7 +65,7 @@ function SubscriptionCard({ sub, onEdit, onDelete, onAddQuota }: {
   return (
     <div
       ref={cardRef}
-      className="group relative bg-white rounded-xl border border-slate-100 overflow-hidden transition-all duration-300 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
+      className="group relative bg-[var(--color-surface)] rounded-xl border border-slate-100 overflow-hidden transition-all duration-300 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
       style={{
         animation: 'fadeSlideUp 0.4s ease-out forwards',
         opacity: 0,
@@ -228,7 +228,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={onClose} />
       <div
         ref={modalRef}
-        className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] w-full max-w-md overflow-hidden"
+        className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08),0_2px_4px_rgba(0,0,0,0.04)] w-full max-w-md overflow-hidden"
         style={{ animation: 'slideUp 0.3s ease-out' }}
       >
         <div className="px-6 py-5 border-b border-slate-50">
@@ -249,7 +249,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
               placeholder="GitHub Copilot"
             />
           </div>
@@ -262,7 +262,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
               required
               value={form.provider}
               onChange={(e) => setForm({ ...form, provider: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
               placeholder="GitHub"
             />
           </div>
@@ -274,7 +274,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
               <select
                 value={form.billingCycle}
                 onChange={(e) => setForm({ ...form, billingCycle: e.target.value as SubscriptionFormData['billingCycle'] })}
-                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm appearance-none cursor-pointer"
+                className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm appearance-none cursor-pointer"
               >
                 <option value="monthly">月付</option>
                 <option value="quarterly">季付</option>
@@ -293,7 +293,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
                   required
                   value={form.costPerCycle}
                   onChange={(e) => setForm({ ...form, costPerCycle: parseFloat(e.target.value) })}
-                  className="w-full pl-7 pr-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm tabular-nums"
+                  className="w-full pl-7 pr-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm tabular-nums"
                 />
               </div>
             </div>
@@ -307,7 +307,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
               required
               value={form.startDate}
               onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
             />
           </div>
           <div className="flex items-center justify-between py-2">
@@ -318,9 +318,9 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
             <button
               type="button"
               onClick={() => setForm({ ...form, autoRenew: !form.autoRenew })}
-              className={`relative w-11 h-6 rounded-full transition-colors ${form.autoRenew ? 'bg-slate-900' : 'bg-slate-200'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${form.autoRenew ? 'bg-[var(--color-ink-soft)]' : 'bg-slate-200'}`}
             >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${form.autoRenew ? 'translate-x-5' : ''}`} />
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-[var(--color-surface)] shadow-sm transition-transform ${form.autoRenew ? 'translate-x-5' : ''}`} />
             </button>
           </div>
           <div className="flex gap-3 pt-2">
@@ -333,7 +333,7 @@ function SubscriptionModal({ subscription, onSave, onClose }: {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
             >
               保存
             </button>
@@ -374,7 +374,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-sm overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
+      <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-sm overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
         <div className="px-6 py-5 border-b border-slate-50">
           <h2 className="text-lg font-medium text-slate-900">{quota ? '编辑配额' : '新建配额'}</h2>
         </div>
@@ -386,7 +386,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
               placeholder="AI Completions"
             />
           </div>
@@ -397,7 +397,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
               required
               value={form.unit}
               onChange={(e) => setForm({ ...form, unit: e.target.value })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
               placeholder="requests"
             />
           </div>
@@ -409,7 +409,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
               min="0"
               value={form.monthlyLimit}
               onChange={(e) => setForm({ ...form, monthlyLimit: parseFloat(e.target.value) })}
-              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm tabular-nums focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+              className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm tabular-nums focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -422,7 +422,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
                 step="0.05"
                 value={form.warningThreshold}
                 onChange={(e) => setForm({ ...form, warningThreshold: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
               />
             </div>
             <div>
@@ -434,7 +434,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
                 step="0.05"
                 value={form.criticalThreshold}
                 onChange={(e) => setForm({ ...form, criticalThreshold: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+                className="w-full px-3 py-2.5 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
               />
             </div>
           </div>
@@ -442,7 +442,7 @@ function QuotaModal({ subscriptionId: _subscriptionId, quota, onSave, onClose }:
             <button type="button" onClick={onClose} className="flex-1 px-4 py-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all">
               取消
             </button>
-            <button type="submit" className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all">
+            <button type="submit" className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all">
               保存
             </button>
           </div>

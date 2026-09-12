@@ -121,7 +121,7 @@ export default function MindsetView() {
         </div>
         <button
           onClick={handleAdd}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-slate-900/10"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-slate-900/10"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -139,8 +139,8 @@ export default function MindsetView() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                 selectedCategory === cat
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900'
+                  ? 'bg-[var(--color-ink-soft)] text-white'
+                  : 'bg-[var(--color-surface)] text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900'
               }`}
             >
               {cat}
@@ -152,7 +152,7 @@ export default function MindsetView() {
 
       <div className="space-y-3">
         {filteredSlogans.length === 0 ? (
-          <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-dashed border-slate-200 p-12 text-center">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-50 flex items-center justify-center">
               <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -167,7 +167,7 @@ export default function MindsetView() {
           filteredSlogans.map((slogan) => (
             <div
               key={slogan.id}
-              className="group bg-white rounded-xl border border-slate-100 p-5 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
+              className="group bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ export default function MindsetView() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
           <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={() => { setShowModal(false); setEditingSlogan(null); }} />
-          <div className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
+          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
             <div className="px-6 py-5 border-b border-slate-50">
               <h2 className="text-lg font-medium text-slate-900">{editingSlogan ? '编辑格言' : '添加格言'}</h2>
             </div>
@@ -216,7 +216,7 @@ export default function MindsetView() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value as Category })}
-                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -229,7 +229,7 @@ export default function MindsetView() {
                   value={form.content}
                   onChange={(e) => setForm({ ...form, content: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all resize-none"
+                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all resize-none"
                   placeholder="输入你的心态格言..."
                   required
                 />
@@ -241,7 +241,7 @@ export default function MindsetView() {
                   value={form.order}
                   onChange={(e) => setForm({ ...form, order: parseInt(e.target.value) || 0 })}
                   min={0}
-                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all"
+                  className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all"
                 />
               </div>
               <div className="flex gap-3 pt-2">
@@ -255,7 +255,7 @@ export default function MindsetView() {
                 <button
                   type="submit"
                   disabled={submitting || !form.content.trim()}
-                  className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all disabled:opacity-50"
+                  className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all disabled:opacity-50"
                 >
                   {submitting ? '保存中...' : '保存'}
                 </button>

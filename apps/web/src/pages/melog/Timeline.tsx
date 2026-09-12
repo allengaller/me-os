@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw, Search, Radio } from 'lucide-react';
+import { RefreshCw, Search, Radio, Mic, Brain, Footprints, Moon, Scale, FileText, ListTodo } from 'lucide-react';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -15,6 +15,198 @@ interface MeLogEntry {
   actor?: string;
   occurredAt: string;
   source?: { name: string; adapter: string; category: string };
+}
+
+interface ParsedCaptureItem {
+  index: number;
+  category: 'health' | 'note';
+  type: string;
+  title: string;
+  value: number | null;
+  unit: string | null;
+  source: string | null;
+  pace: string | null;
+  occurredAt: string;
+  raw: string;
+}
+
+const CAPTURE_TYPE_META: Record<string, { label: string; icon: typeof Brain; color: string }> = {
+  meditation: { label: '冥想', icon: Brain, color: '#8b5cf6' },
+  exercise: { label: '运动', icon: Footprints, color: '#e11d48' },
+  sleep: { label: '睡眠', icon: Moon, color: '#2563eb' },
+  weight: { label: '体重', icon: Scale, color: '#d97706' },
+  todo: { label: '待办', icon: ListTodo, color: '#0d9488' },
+  note: { label: '笔记', icon: FileText, color: '#475569' },
+};
+
+const CAPTURE_PLACEHOLDER = [
+  '照这个句式念：时间（今天/昨天/前天 + 早上/下午/晚上）+ 来源（潮汐/Keep）+ 动作 + 数量',
+  '示例：今天早上潮汐冥想15分钟，昨晚Keep跑步5公里配速5分30秒，昨天睡眠7小时',
+  '支持：冥想 X 分钟 · 跑步 X 公里 · 健身/拉伸/瑜伽等 X 分钟 · 睡眠 X 小时 · 体重 X 公斤',
+  '还想直接记：待办：明天交报告 · 笔记：读到一句很受用的话',
+].join('\n');
+
+function QuickCaptureCard({ onSubmitted }: { onSubmitted: () => void }) {
+  const [text, setText] = useState('');
+  const [items, setItems] = useState<ParsedCaptureItem[] | null>(null);
+  const [excluded, setExcluded] = useState<Set<number>>(new Set());
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const selectedCount = items ? items.length - excluded.size : 0;
+
+  const handleParse = async () => {
+    if (!text.trim()) return;
+    setBusy(true);
+    setFeedback(null);
+    try {
+      const res = await api.post('/melog/capture/parse', { text });
+      setItems(res.data.items || []);
+      setExcluded(new Set());
+    } catch {
+      setFeedback({ ok: false, message: '解析失败，请重试' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleItem = (index: number) => {
+    setExcluded((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const handleSubmit = async () => {
+    if (!items) return;
+    setBusy(true);
+    try {
+      const res = await api.post('/melog/capture', { text, exclude: [...excluded] });
+      setFeedback({
+        ok: true,
+        message: `已写入：时间线 +${res.data.created}、健康记录 +${res.data.healthRecords}、待办 +${res.data.todos ?? 0}（重复提交会自动去重）`,
+      });
+      setItems(null);
+      setText('');
+      onSubmitted();
+    } catch {
+      setFeedback({ ok: false, message: '提交失败，请重试' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleReset = () => {
+    setItems(null);
+    setExcluded(new Set());
+    setFeedback(null);
+  };
+
+  return (
+    <div
+      className="rounded-xl p-4 mb-6"
+      style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border-light)' }}
+    >
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <Mic size={14} style={{ color: 'var(--color-text-tertiary)' }} />
+        <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+          口述打卡
+        </span>
+        <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+          打开潮汐 / Keep 看完数据，用键盘听写念出来
+        </span>
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={3}
+        placeholder={CAPTURE_PLACEHOLDER}
+        className="w-full rounded-lg p-3 text-sm outline-none resize-y"
+        style={{
+          backgroundColor: 'var(--color-bg)',
+          border: '1px solid var(--color-border-light)',
+          color: 'var(--color-text-primary)',
+        }}
+      />
+      {!items ? (
+        <div className="mt-3">
+          <button
+            onClick={handleParse}
+            disabled={busy || !text.trim()}
+            className="px-4 py-1.5 text-xs rounded-lg text-white disabled:opacity-40"
+            style={{ backgroundColor: 'var(--color-ink-soft)' }}
+          >
+            {busy ? '解析中…' : '解析预览'}
+          </button>
+        </div>
+      ) : (
+        <div className="mt-3">
+          <div className="space-y-1.5">
+            {items.map((item) => {
+              const meta = CAPTURE_TYPE_META[item.type] || CAPTURE_TYPE_META.note;
+              const checked = !excluded.has(item.index);
+              return (
+                <label
+                  key={item.index}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer"
+                  style={{
+                    backgroundColor: 'var(--color-bg)',
+                    border: `1px solid ${checked ? 'var(--color-border-light)' : 'transparent'}`,
+                    opacity: checked ? 1 : 0.45,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleItem(item.index)}
+                    style={{ accentColor: 'var(--color-text-primary)' }}
+                  />
+                  <meta.icon size={13} style={{ color: meta.color }} />
+                  <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    {item.title}
+                  </span>
+                  {item.source && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{item.source}</span>
+                  )}
+                  <span className="text-[11px] ml-auto" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {formatTime(item.occurredAt)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            <button
+              onClick={handleSubmit}
+              disabled={busy || selectedCount === 0}
+              className="px-4 py-1.5 text-xs rounded-lg text-white disabled:opacity-40"
+              style={{ backgroundColor: 'var(--color-ink-soft)' }}
+            >
+              {busy ? '提交中…' : `提交 ${selectedCount} 条`}
+            </button>
+            <button
+              onClick={handleReset}
+              disabled={busy}
+              className="px-3 py-1.5 text-xs rounded-lg"
+              style={{ border: '1px solid var(--color-border-light)', color: 'var(--color-text-tertiary)' }}
+            >
+              重新编辑
+            </button>
+            <span className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>
+              将写入 MeLog 时间线与健康记录
+            </span>
+          </div>
+        </div>
+      )}
+      {feedback && (
+        <div className="mt-2 text-xs" style={{ color: feedback.ok ? '#10b981' : '#ef4444' }}>
+          {feedback.message}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface Overview {
@@ -92,6 +284,9 @@ export default function Timeline() {
         ))}
       </div>
 
+      {/* 口述打卡 */}
+      <QuickCaptureCard onSubmitted={loadData} />
+
       {/* 筛选栏 */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <button
@@ -101,7 +296,7 @@ export default function Timeline() {
           }`}
           style={
             category === ''
-              ? { backgroundColor: 'var(--color-text-primary)' }
+              ? { backgroundColor: 'var(--color-ink-soft)' }
               : { backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border-light)', color: 'var(--color-text-tertiary)' }
           }
         >

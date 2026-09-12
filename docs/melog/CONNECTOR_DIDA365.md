@@ -1,0 +1,223 @@
+# 滴答清单（Dida365）连接器 — 调研、设计与实测报告
+
+> 对应实现：`packages/connectors/src/connectors/dida365.ts`（连接器）
+> 与 `packages/connectors/src/cli.ts` 的 `dida365` 子命令。
+> 使用速查见 [packages/connectors/README.md](../../packages/connectors/README.md)，本文是完整的调研与实测档案。
+> 实测时间：2026-09-12（接口为非官方路由，后续可能变动，变动时以本文的「实测方法」一节重新核对）。
+
+---
+
+## 1. 目标
+
+把滴答清单（国内端 dida365.com）的两类数据读入 MeOS 时间线：
+
+| 数据 | 说明 | MeLog 映射 |
+| --- | --- | --- |
+| 习惯打卡记录 | 每次打卡的日期、数值、目标、状态 | `category: 'custom'`，`type: 'habit-checkin'`，按天幂等 |
+| 任务备注 | 任务标题 + 描述（`content`）+ 所属清单 | `category: 'note'`，`type: 'task-note'`，按任务幂等 |
+
+## 2. 接入选型
+
+调研结论（2026-09）：
+
+| 途径 | 能拿到什么 | 认证 | 结论 |
+| --- | --- | --- | --- |
+| 官方 Open API（developer.dida365.com，OAuth2） | 清单、任务、任务备注（`content`） | OAuth2，需注册开发者应用 | 合规稳定，但**不含习惯/打卡** |
+| 官方 MCP（help.dida365.com 有专文） | 任务管理为主，需 AI 客户端配合 | — | 打卡大概率不可读，且非 CLI 直读形态 |
+| Web 端私有接口（`api.dida365.com/api/v2|v3/*`） | **习惯 + 打卡 + 任务备注全量** | 浏览器 Cookie 中的 `t` token | **采纳**。社区广泛使用；风险：非官方、可能变动 |
+
+**决策**：全部走 Web 私有接口（一个 token 拿全两类数据），API host 做成参数（默认国内端，国际端 TickTick 传 `--api-base https://api.ticktick.com`）。
+
+## 3. 设计
+
+```
+浏览器登录 dida365.com ──复制 Cookie t──┐
+                                        ▼
+                    melog-connector dida365（Node CLI，零运行时依赖）
+                    ├─ GET  /api/v2/habits              习惯名/状态
+                    ├─ POST /api/v2/habitCheckins/query 打卡明细（body: {habitIds}）
+                    └─ GET  /api/v3/batch/check/0       全量任务快照（275 条含 101 条备注）
+                                        │  映射为 MeLog 信封
+                                        ▼
+                    POST http://localhost:3001/api/melog/ingest（幂等 externalId）
+```
+
+映射规则：
+
+| 数据 | externalId（幂等键） | occurredAt 锚点 | tags |
+| --- | --- | --- | --- |
+| 打卡 | `dida365-habit-{habitId}-{YYYY-MM-DD}` | `checkinTime`（缺省用打卡日零点） | `dida365,habit` |
+| 备注 | `dida365-task-{taskId}` | 完成时间 > 截止时间 > 创建时间 | `dida365,todo,{清单名}` |
+
+打卡按天幂等：同一天多次打卡只保留一条（`checkinStamp` 为准）；重复执行整条命令不会产生重复数据。
+
+## 4. 2026-09 实测接口结构（核心资产）
+
+以下全部来自对 `api.dida365.com` 的真实请求（浏览器内 fetch 与 CLI 双向验证）。**与社区公开资料有三处关键出入**，实现已按实测修正：
+
+### 4.1 习惯列表 — `GET /api/v2/habits`（可用）
+
+```jsonc
+[{
+  "id": "62db435093011161c9c809be",
+  "name": "CLEAN",
+  "status": 0,              // 0=使用中，1=已归档（归档习惯仍会返回打卡数据）
+  "totalCheckIns": 449,
+  "type": "Boolean",
+  "goal": 1.0, "step": 1.0, "unit": "次",
+  "repeatRule": "RRULE:FREQ=WEEKLY;…",
+  "encouragement": "…", "iconRes": "txt_C", "color": "#35D870",
+  "archivedTime": "2001-01-01T00:00:00.000+0000",
+  "createdTime": "2023-04-06T01:57:16.000+0000"
+  // …
+}]
+```
+
+### 4.2 打卡明细 — 两形态对比
+
+| 请求 | 结果 |
+| --- | --- |
+| `GET /api/v2/habitCheckins?startDate=…&endDate=…` | **500 unknown_exception**（网页端自己调也 500，此形态已废） |
+| `POST /api/v2/habitCheckins/query`，body `{"habitIds": []}` | 200，但**空数组返回空** |
+| `POST /api/v2/habitCheckins/query`，body `{"habitIds": [真实id…]}` | 200，返回全量打卡 |
+
+返回结构是**以 habitId 为键的映射，不是数组**：
+
+```jsonc
+{
+  "checkins": {
+    "63ca23d5a909910b2c4e11d3": [
+      {
+        "id": "67bbd53280a3910683d57400",
+        "habitId": "63ca23d5a909910b2c4e11d3",
+        "checkinStamp": 20250224,                    // 打卡日，YYYYMMDD 整数（账号本地时区）
+        "checkinTime": "2025-02-24T02:10:58.492+0000", // UTC 时间串，+0000 无冒号
+        "opTime": "2025-02-24T02:10:58.492+0000",
+        "value": 1, "goal": 1, "status": 2
+      }
+      // …
+    ]
+  }
+}
+```
+
+要点：
+- **打卡日以 `checkinStamp` 为准**（App 内口径）。UTC 的 `checkinTime` 直接转本地日期会错位（北京时间零点后打卡的例子：UTC 09-01T16:33 → 本地 09-02，stamp 即 20260902）。
+- 时间串时区为 `+0000` 无冒号，`new Date()` 在 V8 可解析，但严格 ISO 化需插冒号（连接器 `parseDidaDate` 已处理）。
+- 无 `streak` 字段（社区旧资料的 `streak/date` 已不存在）。
+- 实测账号 17 个习惯（含归档）共 2287 条打卡，30 天窗口 131 条。
+
+### 4.3 任务快照 — 三形态对比
+
+| 请求 | 结果 |
+| --- | --- |
+| `GET /api/v2/project` | **405**（不接受 GET） |
+| `GET /api/v2/batch/check/0` | **403 access_forbidden**（v2 已封） |
+| `GET /api/v3/batch/check/0` | **200**（网页端现用） |
+
+v3 返回顶层键：`checkPoint, syncTaskBean, projectProfiles, projectGroups, filters, tags, syncTaskOrderBean, syncOrderBean, syncOrderBeanV3, inboxId, checks, remindChanges`。
+
+```jsonc
+{
+  "inboxId": "inbox1021432222",
+  "syncTaskBean": {
+    "update": [ /* 首次同步（checkpoint=0）全部 275 个任务在这里，add 为空 */ ],
+    "add": [], "delete": [], "tagUpdate": [], "empty": []
+  },
+  "projectProfiles": [ { "id": "66c7ecca71e2110da8f0c385", "name": "🏥医疗" } /* …45 个清单 */ ]
+}
+```
+
+任务字段（与备注相关的）：
+
+```jsonc
+{
+  "id": "6a89b02f7c0c9174ec209538",
+  "projectId": "inbox1021432222",     // 收件箱 projectId = "inbox" + 用户 id
+  "title": "父亲沟通创业公司情况",
+  "content": "RAN 业务，向阵控业务，NTN 业务。",   // ← 备注/描述
+  "desc": null,                        // 旧字段，content 为空时回退
+  "status": 0,                         // 0=未完成（完成态带 completedTime）
+  "completedTime": null,
+  "dueDate": "2026-08-22T10:15:00.000+0000",
+  "createdTime": "2026-08-22T14:20:31.000+0000",
+  "tags": null
+}
+```
+
+要点：
+- 清单名在 `projectProfiles`（v2 的 `syncProjectBean` 在 v3 里恒为空）；收件箱不在其中，需用顶层 `inboxId` 特判（连接器命名「收集箱」）。
+- 实测 275 个任务中 101 个带非空 `content`。
+
+### 4.4 认证
+
+- 只需 `Cookie: t=<token>`（浏览器登录 dida365.com 后，DevTools → Application → Cookies 里名为 `t` 的值）。
+- **无需**网页端附带的 `x-device`/`x-csrftoken`/`x-tz` 等头（CLI 只发 Cookie + UA 即成功）。
+- token 失效时接口返回 401/403，连接器会给出友好提示。
+- token 是账号级会话凭证：只在用户本机与滴答服务器之间传输；在手机 App 退出重登可使其失效。
+
+## 5. 实现清单
+
+| 文件 | 内容 |
+| --- | --- |
+| `packages/connectors/src/connectors/dida365.ts` | 连接器：拉取（habits / checkins query / v3 batch）、映射（`mapHabitCheckins` / `mapTaskNotes`）、`collectDida365Entries`（只取不推，供 dry-run）、`runDida365Connector`（推送） |
+| `packages/connectors/src/connectors/dida365.test.ts` | 7 组用例：时间解析、stamp 转换、窗口过滤、备注锚点优先级、POST→GET 降级、401 友好报错、端到端双类目推送 |
+| `packages/connectors/src/cli.ts` | `dida365` 子命令：`--days/--token/--api-base/--no-habits/--no-tasks/--dry-run/--source-name`，状态存 `~/.melog/connectors/cli-dida365.json` |
+| `eslint.config.js` | 对 `packages/connectors/**` 关闭 `no-undef`（Node 全局误报，该包 lint 在改动前已在 main 上失败） |
+
+## 6. 端到端测试报告（2026-09-12）
+
+| 环节 | 结果 |
+| --- | --- |
+| 单元测试 | 17/17 通过（connectors 全包） |
+| tsc 构建 | 通过 |
+| lint（全仓 `pnpm lint`） | 通过（顺带修复了 connectors 包在 main 上已存在的 lint 失败） |
+| `--dry-run`（真实 token） | 习惯 17 个、打卡条目 131 条、备注条目 101 条，字段抽检正确 |
+| 正式推送 MeOS | 新增 232（131 打卡 + 101 备注），数据源 `dida365` 注册为 connected |
+| 幂等性 | 立即重跑：新增 0 / 更新 232，无重复 |
+| 时间线抽查 | 标题、备注全文、清单名 tags（如 `dida365,todo,☀️早晨`）、occurredAt 均正确 |
+
+## 7. 使用指南
+
+```bash
+# 1) 获取 token：浏览器登录 dida365.com → DevTools → Application → Cookies → 复制 t 的值
+export DIDA365_TOKEN='<t 的值>'
+
+# 2) 从仓库根目录构建
+pnpm --filter @meos/melog-connectors build
+
+# 3) 先 dry-run 验证（不写 MeOS，打印条目样例）
+node packages/connectors/dist/cli.js dida365 --dry-run --days 30
+
+# 4) 正式推送（幂等，可随时重跑；默认回溯 30 天）
+node packages/connectors/dist/cli.js dida365
+
+# 常用变体
+node packages/connectors/dist/cli.js dida365 --no-tasks      # 只同步打卡
+node packages/connectors/dist/cli.js dida365 --no-habits     # 只同步备注
+node packages/connectors/dist/cli.js dida365 --days 365      # 回溯一年
+node packages/connectors/dist/cli.js dida365 \
+  --api-base https://api.ticktick.com                        # 国际端 TickTick
+```
+
+定时同步示例（crontab，每天 23:30）：
+
+```cron
+30 23 * * * cd /path/to/me-os && DIDA365_TOKEN=<t> node packages/connectors/dist/cli.js dida365 >> /tmp/dida365-sync.log 2>&1
+```
+
+## 8. 运维与故障排查
+
+| 现象 | 原因与处理 |
+| --- | --- |
+| `token 无效或已过期` | Cookie `t` 过期/被顶下线。重新复制；或在手机 App 退出重登后旧 token 即失效 |
+| 打卡拉取报 HTTP 500/404 | 连接器已内置 POST 主路径 + GET 回退；若仍失败，按 §4.2 用浏览器 DevTools 重新核对路由 |
+| 任务为空 | 检查 `--api-base` 是否为国内端；国际端 v3 路由形态可能不同，按 §4.3 核对 |
+| MeLog 推送报 HTTP 401 | MeOS 未跑或未开 dev 免鉴权：启动 MeOS 或传 `--token`（MeOS 的 Bearer Token，环境变量 `MEOS_API_TOKEN`） |
+| 接口结构又变了 | 复测方法：登录网页版后，在 DevTools → Network 里过滤 `api.dida365.com`，看网页端自己调用的路由与载荷（§4 即由此方法得出） |
+
+## 9. 风险与合规提示
+
+- 私有接口不受官方 SLA 保护，可能随版本变动；连接器对打卡查询做了 POST/GET 双形态回退以降低脆弱性。
+- token 为账号会话凭证，仅用于本人账号、本机运行；不要提交到仓库或分享给他人。
+- 如后续需要更高合规性，可将任务/备注迁移到官方 Open API（OAuth2），仅打卡保留私有接口。

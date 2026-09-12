@@ -519,6 +519,11 @@ export interface BrandOverview {
   }[];
   trends: { channelId: string; name: string; series: { recordedAt: string; followers: number }[] }[];
   pillars: { id: string; name: string; contentCount: number }[];
+  /** 所有渠道本周期增量汇总（按 recordedAt 时间窗口聚合，不分空/基线） */
+  totals: {
+    week: { followersDelta: number; views: number; likes: number; comments: number; shares: number };
+    month: { followersDelta: number; views: number; likes: number; comments: number; shares: number };
+  };
 }
 
 // ==================== API 响应类型 ====================

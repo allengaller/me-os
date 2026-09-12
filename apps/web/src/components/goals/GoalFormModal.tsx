@@ -40,7 +40,7 @@ export default function GoalFormModal({
           type="text"
           value={form.title}
           onChange={(e) => onChange({ ...form, title: e.target.value })}
-          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
           placeholder="输入目标名称"
           required
         />
@@ -53,7 +53,7 @@ export default function GoalFormModal({
         <select
           value={form.domainId}
           onChange={(e) => onChange({ ...form, domainId: e.target.value })}
-          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
           required
         >
           <option value="">选择领域</option>
@@ -73,7 +73,7 @@ export default function GoalFormModal({
           <select
             value={form.priority}
             onChange={(e) => onChange({ ...form, priority: e.target.value as GoalForm['priority'] })}
-            className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+            className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
           >
             {priorityOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -89,7 +89,7 @@ export default function GoalFormModal({
           <select
             value={form.status}
             onChange={(e) => onChange({ ...form, status: e.target.value as GoalForm['status'] })}
-            className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm"
+            className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm"
           >
             {statusOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -108,7 +108,7 @@ export default function GoalFormModal({
           value={form.description}
           onChange={(e) => onChange({ ...form, description: e.target.value })}
           rows={3}
-          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-white transition-all text-sm resize-none"
+          className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-slate-900 placeholder-slate-300 focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all text-sm resize-none"
           placeholder="添加描述..."
         />
       </div>

@@ -4,7 +4,19 @@
   "version": "0.1.0",
   "description": "人生管理系统 Chrome 扩展 - 快速访问和效率工具",
   "permissions": ["storage", "activeTab"],
-  "host_permissions": ["http://localhost:5173/*", "https://meos.app/*"],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://localhost:3001/*",
+    "http://localhost:5173/*",
+    "https://meos.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:3000/*", "http://localhost:5173/*", "https://meos.app/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "action": {
     "default_title": "MeOS",
     "default_icon": {

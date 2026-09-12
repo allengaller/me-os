@@ -89,7 +89,9 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       if (query.type) where.type = query.type;
       where.recordedAt = { gte: query.from || sevenDaysAgo };
       if (query.to) {
-        where.recordedAt.lte = query.to;
+        const endOfDay = new Date(query.to);
+        endOfDay.setHours(23, 59, 59, 999);
+        where.recordedAt.lte = endOfDay;
       }
 
       const records = await prisma.healthRecord.findMany({

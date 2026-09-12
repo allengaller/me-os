@@ -285,7 +285,7 @@ export default function Workflow() {
   return (
     <div className="flex h-full">
       {/* Sidebar */}
-      <div className="w-64 border-r border-gray-200 bg-white flex flex-col">
+      <div className="w-64 border-r border-gray-200 bg-[var(--color-surface)] flex flex-col">
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <h2 className="font-semibold text-gray-800">工作流</h2>
           <button
@@ -329,7 +329,7 @@ export default function Workflow() {
 
       {/* Entity Panel */}
       {selectedWorkflow && showEntityPanel && (
-        <div className="w-56 border-r border-gray-200 bg-white flex flex-col">
+        <div className="w-56 border-r border-gray-200 bg-[var(--color-surface)] flex flex-col">
           <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <span className="text-xs font-medium text-gray-600">添加节点</span>
             <button
@@ -399,7 +399,7 @@ export default function Workflow() {
       <div className="flex-1 flex flex-col">
         {selectedWorkflow ? (
           <>
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-[var(--color-surface)]">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => { setSelectedWorkflow(null); setNodes([]); setEdges([]); }}
@@ -447,7 +447,7 @@ export default function Workflow() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-96 shadow-xl">
+          <div className="bg-[var(--color-surface)] rounded-xl p-6 w-96 shadow-xl">
             <h3 className="text-lg font-semibold mb-4">创建工作流</h3>
             <input
               type="text"

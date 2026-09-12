@@ -262,8 +262,8 @@ export default function Topics() {
               onClick={() => setCategoryFilter(cat)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 categoryFilter === cat
-                  ? 'bg-[var(--color-text-primary)] text-white'
-                  : 'bg-white text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-text-tertiary)]'
+                  ? 'bg-[var(--color-ink-soft)] text-white'
+                  : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-text-tertiary)]'
               }`}
             >
               {cat === 'all' ? '全部' : cat}
@@ -302,7 +302,7 @@ export default function Topics() {
             return (
               <div
                 key={topic.id}
-                className="bg-white rounded-xl border border-slate-100 p-5 transition-shadow hover:shadow-sm"
+                className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 transition-shadow hover:shadow-sm"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -443,7 +443,7 @@ export default function Topics() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleAddNote(topic.id)}
-                              className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+                              className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors"
                             >
                               提交
                             </button>
@@ -525,7 +525,7 @@ export default function Topics() {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-lg font-medium text-slate-900 mb-5">
                 {editingTopic ? '编辑课题' : '新建课题'}
@@ -653,7 +653,7 @@ export default function Topics() {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleSubmit}
-                  className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors"
+                  className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-5 py-2.5 transition-colors"
                 >
                   {editingTopic ? '保存' : '创建'}
                 </button>
@@ -674,7 +674,7 @@ export default function Topics() {
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setEditingCategories(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm">
+          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-xl w-full max-w-sm">
             <div className="p-6">
               <h2 className="text-lg font-medium text-slate-900 mb-4">管理分类</h2>
               <div className="space-y-2 mb-4">

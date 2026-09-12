@@ -60,6 +60,11 @@ Notion、自定义 Webhook），创建后即可通过 Ingest API 推送数据。
 MeLog Standard v0.1 的摘要页（信封字段、Ingest 规范、MCP 工具、Skill 清单），
 完整规范见 [docs/melog/STANDARD.md](./melog/STANDARD.md)。
 
+### 口述打卡
+时间线页顶部的手动录入卡片：在潮汐 / Keep 看完数据后用键盘听写念出来，
+规则解析成结构化健康条目，预览确认后双写时间线与健康记录，重复提交幂等。
+句式模板、解析规则与 API 见 [docs/melog/CAPTURE.md](./melog/CAPTURE.md)。
+
 ## API 一览
 
 REST 前缀：`/api/melog`
@@ -73,6 +78,8 @@ REST 前缀：`/api/melog`
 | GET / DELETE | `/entries/:id` | 条目详情 / 删除 |
 | POST | `/entries` | 手动写入单条 |
 | POST | `/ingest` | 批量幂等写入（MeLog Standard） |
+| POST | `/capture/parse` | 口述文本解析预览（不落库） |
+| POST | `/capture` | 口述文本解析 + 双写时间线与健康记录 |
 | GET / POST | `/skills` | 技能列表（自动安装内置）/ 安装社区技能 |
 | DELETE | `/skills/:id` | 卸载非内置技能 |
 | POST | `/skills/:id/run` | 运行技能 |

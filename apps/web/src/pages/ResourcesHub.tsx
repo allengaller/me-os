@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Wallet, Users } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Assets from './resources/Assets';
 import Contacts from './resources/Contacts';
 
@@ -66,6 +67,8 @@ export default function ResourcesHub() {
           );
         })}
       </div>
+
+      {activeTab === 'contacts' && <MethodologyCard page="resources:contacts" />}
 
       {activeTab === 'assets' && <Assets />}
       {activeTab === 'contacts' && <Contacts />}

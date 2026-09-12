@@ -6,6 +6,10 @@ import { reflectionRoutes } from './routes.js';
 const prisma = new PrismaClient();
 
 async function cleanup() {
+  await prisma.healthRecord.deleteMany({ where: { userId: 'reflection-test-user' } });
+  await prisma.habitLog.deleteMany({ where: { habit: { userId: 'reflection-test-user' } } });
+  await prisma.habit.deleteMany({ where: { userId: 'reflection-test-user' } });
+  await prisma.todo.deleteMany({ where: { userId: 'reflection-test-user' } });
   await prisma.reflection.deleteMany({ where: { userId: 'reflection-test-user' } });
   await prisma.user.deleteMany({ where: { id: 'reflection-test-user' } });
 }
@@ -24,6 +28,10 @@ describe('Reflection Routes', () => {
   });
 
   beforeEach(async () => {
+    await prisma.healthRecord.deleteMany({ where: { userId: 'reflection-test-user' } });
+    await prisma.habitLog.deleteMany({ where: { habit: { userId: 'reflection-test-user' } } });
+    await prisma.habit.deleteMany({ where: { userId: 'reflection-test-user' } });
+    await prisma.todo.deleteMany({ where: { userId: 'reflection-test-user' } });
     await prisma.reflection.deleteMany({ where: { userId: 'reflection-test-user' } });
   });
 
@@ -144,5 +152,66 @@ describe('Reflection Routes', () => {
     expect(response.statusCode).toBe(200);
     const deleted = await prisma.reflection.findUnique({ where: { id: reflection.id } });
     expect(deleted).toBeNull();
+  });
+
+  it('should aggregate today data for reflection prefill', async () => {
+    const now = new Date();
+    const habit = await prisma.habit.create({
+      data: { userId: 'reflection-test-user', title: '晨跑' },
+    });
+    await prisma.habitLog.create({ data: { habitId: habit.id, date: now } });
+    await prisma.todo.create({
+      data: { userId: 'reflection-test-user', title: '写周报', status: 'done', completedAt: now },
+    });
+    await prisma.healthRecord.create({
+      data: {
+        userId: 'reflection-test-user',
+        type: 'sleep',
+        value: 7.5,
+        unit: 'hours',
+        recordedAt: now,
+      },
+    });
+
+    const app = await createApp();
+    const response = await app.inject({ method: 'GET', url: '/api/reflections/today-summary' });
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.todos).toMatchObject({ total: 1, createdToday: 1 });
+    expect(body.habits.total).toBe(1);
+    expect(body.habits.items).toContain('晨跑');
+    expect(body.health.total).toBe(1);
+    expect(body.health.items[0].label).toBe('睡眠 7.5 小时');
+    expect(body.summary).toContain('待办完成 1 条');
+    expect(body.summary).toContain('习惯打卡 1 项');
+    expect(body.summary).toContain('健康记录 1 条');
+  });
+
+  it('should skip data from other days in today-summary', async () => {
+    const { start } = (() => {
+      const s = new Date();
+      s.setHours(0, 0, 0, 0);
+      return { start: s };
+    })();
+    const yesterday = new Date(start);
+    yesterday.setDate(yesterday.getDate() - 1);
+    await prisma.todo.create({
+      data: { userId: 'reflection-test-user', title: '昨天完成的事', status: 'done', completedAt: yesterday },
+    });
+
+    const app = await createApp();
+    const response = await app.inject({ method: 'GET', url: '/api/reflections/today-summary' });
+    expect(response.json().todos.total).toBe(0);
+    expect(response.json().summary).toBe('');
+  });
+
+  it('should accept an explicit date and reject malformed ones', async () => {
+    const app = await createApp();
+    const bad = await app.inject({ method: 'GET', url: '/api/reflections/today-summary?date=2026/09/12' });
+    expect(bad.statusCode).toBe(400);
+
+    const ok = await app.inject({ method: 'GET', url: '/api/reflections/today-summary?date=2026-09-12' });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.json().date).toBe('2026-09-12');
   });
 });

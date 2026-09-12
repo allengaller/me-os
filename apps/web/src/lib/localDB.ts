@@ -969,11 +969,17 @@ export const localDB = {
   },
 
   habits: {
-    async getAll(): Promise<{ habits: Habit[] }> {
+    async getAll(): Promise<{ habits: (Habit & { logs: HabitLog[] })[] }> {
       const habits = currentUserId
         ? await getByIndex<Habit>('habits', 'userId', currentUserId)
         : [];
-      return { habits };
+      const withLogs = await Promise.all(
+        habits.map(async (habit) => {
+          const logs = await getByIndex<HabitLog>('habitLogs', 'habitId', habit.id);
+          return { ...habit, logs };
+        })
+      );
+      return { habits: withLogs };
     },
 
     async create(data: { title: string; description?: string; frequency?: string; color?: string }): Promise<{ habit: Habit }> {

@@ -310,7 +310,7 @@ ${framework.structure.map((s, i) => `${i + 1}. ${s}`).join('\n')}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {PRACTICES.map((p) => (
             <div key={p.title} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'var(--color-text-primary)' }}>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: 'var(--color-ink-soft)' }}>
                 <Sparkles size={12} style={{ color: 'var(--color-text-inverse)' }} />
               </div>
               <div>

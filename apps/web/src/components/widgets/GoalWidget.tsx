@@ -69,7 +69,7 @@ export default function GoalWidget({ goals }: GoalWidgetProps) {
                 className="h-full rounded-full transition-all duration-700"
                 style={{
                   width: `${Math.min(goal.progress, 100)}%`,
-                  backgroundColor: 'var(--color-text-primary)',
+                  backgroundColor: 'var(--color-ink-soft)',
                 }}
               />
             </div>

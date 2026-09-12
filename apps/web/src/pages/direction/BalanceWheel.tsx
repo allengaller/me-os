@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 import api from '../../lib/api';
+import RadarChart from '../../components/charts/RadarChart';
 
 interface Domain {
   id: string;
@@ -70,19 +70,12 @@ export default function BalanceWheel() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-slate-100 p-6">
+        <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-6">
           <h2 className="text-sm font-medium text-slate-900 mb-4">平衡轮可视化</h2>
-          <ResponsiveContainer width="100%" height={360}>
-            <RadarChart data={chartData}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis dataKey="domain" tick={{ fill: '#64748b', fontSize: 12 }} />
-              <PolarRadiusAxis domain={[0, 10]} tick={{ fill: '#94a3b8', fontSize: 10 }} />
-              <Radar name="当前评分" dataKey="score" stroke="#0ea5e9" fill="#0ea5e9" fillOpacity={0.3} />
-            </RadarChart>
-          </ResponsiveContainer>
+          <RadarChart data={chartData.map((d) => ({ label: d.domain, value: d.score }))} max={10} color="#0ea5e9" gridColor="#e2e8f0" labelColor="#64748b" />
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-100 p-6">
+        <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-6">
           <h2 className="text-sm font-medium text-slate-900 mb-4">领域评分</h2>
           <div className="space-y-5">
             {domains.map((domain) => (
@@ -98,7 +91,7 @@ export default function BalanceWheel() {
                     max="10"
                     value={scores[domain.id] || 5}
                     onChange={(e) => setScores({ ...scores, [domain.id]: parseInt(e.target.value) })}
-                    className="flex-1 h-1 bg-slate-100 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-900"
+                    className="flex-1 h-1 bg-slate-100 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-ink-soft)]"
                   />
                   <span className="text-lg font-light text-slate-900 w-6 text-center tabular-nums">
                     {scores[domain.id] || 5}
@@ -110,7 +103,7 @@ export default function BalanceWheel() {
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className="mt-6 w-full py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all disabled:opacity-50"
+            className="mt-6 w-full py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all disabled:opacity-50"
           >
             {submitting ? '保存中...' : '保存评分'}
           </button>

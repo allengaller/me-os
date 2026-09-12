@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
     "db:studio": "prisma studio --schema=src/prisma/schema.prisma",
     "db:seed": "tsx src/prisma/seed.ts",
+    "db:seed:brand": "tsx src/prisma/seed-brand.ts",
     "lint": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 200",
     "test": "vitest"
   },

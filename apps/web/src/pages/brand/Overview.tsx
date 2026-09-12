@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
+import LineChart from '../../components/charts/LineChart';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -100,6 +100,39 @@ export default function Overview() {
       </div>
 
       <div>
+        <h3 className="text-sm font-medium mb-3">渠道数据汇总（按 MetricSnapshot 聚合）</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(['week', 'month'] as const).map((window) => {
+            const label = window === 'week' ? '本周（7 天）' : '本月（30 天）';
+            const t = data.totals[window];
+            const fmt = (n: number) => (n === 0 ? '—' : n.toLocaleString());
+            return (
+              <div key={window} className="card p-4">
+                <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {label}
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span style={{ color: 'var(--color-text-tertiary)' }}>粉丝新增</span>
+                    <p className="text-lg font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                      {fmt(t.followersDelta)}
+                    </p>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--color-text-tertiary)' }}>互动累计</span>
+                    <p className="text-sm leading-6" style={{ color: 'var(--color-text-primary)' }}>
+                      播放 {fmt(t.views)} · 赞 {fmt(t.likes)}<br />
+                      评论 {fmt(t.comments)} · 分享 {fmt(t.shares)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
         <h3 className="text-sm font-medium mb-3">内容漏斗</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {FUNNEL.map((f) => (
@@ -157,26 +190,15 @@ export default function Overview() {
       {chartData.length > 1 && (
         <div>
           <h3 className="text-sm font-medium mb-3">粉丝趋势</h3>
-          <div className="card p-4" style={{ height: 280 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="point" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Legend />
-                {data.trends.map((t, i) => (
-                  <Line
-                    key={t.channelId}
-                    type="monotone"
-                    dataKey={t.name}
-                    stroke={LINE_COLORS[i % LINE_COLORS.length]}
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="card p-4">
+            <LineChart
+              data={chartData}
+              xKey="point"
+              series={data.trends.map((t, i) => ({ key: t.name, color: LINE_COLORS[i % LINE_COLORS.length], name: t.name }))}
+              height={280}
+              showGrid
+              showLegend
+            />
           </div>
         </div>
       )}

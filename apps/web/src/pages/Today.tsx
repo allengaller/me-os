@@ -3,10 +3,8 @@ import { format, startOfDay, isSameDay } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import {
   Check,
-  Circle,
   Plus,
   Zap,
-  Calendar,
   Target,
   ArrowRight,
   Sunrise,
@@ -174,24 +172,24 @@ export default function Today() {
   }
 
   return (
-    <div className="page-enter max-w-5xl mx-auto">
+    <div className="page-enter">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <GreetingIcon size={24} style={{ color: 'var(--color-text-tertiary)' }} />
+        <div className="flex items-center gap-3 mb-1.5">
+          <GreetingIcon size={24} style={{ color: 'var(--color-accent)' }} />
           <h1
             className="text-3xl"
             style={{
               fontFamily: 'var(--font-display)',
-              fontWeight: 500,
-              letterSpacing: '-0.02em',
-              color: 'var(--color-text-primary)',
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
+              color: 'var(--color-ink)',
             }}
           >
             {greeting.text}
           </h1>
         </div>
-        <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-ink-2)' }}>
           {greeting.sub} · {format(new Date(), 'yyyy年M月d日 EEEE', { locale: zhCN })}
         </p>
       </div>
@@ -201,94 +199,62 @@ export default function Today() {
         <div
           className="rounded-xl p-5 mb-6 relative overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, var(--color-text-primary) 0%, #3D3C38 100%)',
-            color: 'var(--color-text-inverse)',
+            background: 'linear-gradient(135deg, #6B6965 0%, #55524D 100%)',
+            color: 'var(--color-ink-inverse)',
           }}
         >
-          <div
-            className="absolute top-0 right-0 w-24 h-24 opacity-10"
-            style={{ background: 'radial-gradient(circle, currentColor 0%, transparent 70%)' }}
-          />
-          <p className="text-[10px] font-medium uppercase tracking-widest mb-2 opacity-60" style={{ fontFamily: 'var(--font-mono)' }}>
-            我的愿景
-          </p>
-          <p className="text-sm leading-relaxed max-w-2xl" style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-1.5 h-1.5 rounded-[2px]" style={{ backgroundColor: 'rgba(255, 255, 255, 0.65)' }} />
+            <p className="text-xs font-medium tracking-widest" style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-paper-3)' }}>
+              我的愿景
+            </p>
+          </div>
+          <p className="text-[15px] leading-relaxed max-w-3xl">
             {vision.content}
           </p>
         </div>
       )}
 
-      {/* Dashboard Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <Link to="/direction?tab=goals" className="card p-4 hover:shadow-sm transition-all">
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-tertiary)' }}>活跃目标</p>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
+      {/* Stat Band */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-8">
+        <Link to="/direction?tab=goals" className="card p-4">
+          <p className="text-label mb-1.5">活跃目标</p>
+          <p className="text-2xl text-num" style={{ color: 'var(--color-ink)' }}>
             {activeGoals.length}
           </p>
         </Link>
-        <div className="card p-4">
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-tertiary)' }}>待办</p>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
+        <Link to="/action/todos" className="card p-4">
+          <p className="text-label mb-1.5">待办</p>
+          <p className="text-2xl text-num" style={{ color: 'var(--color-ink)' }}>
             {pendingTodos.length}
           </p>
-        </div>
-        <Link to="/cognition?tab=topics" className="card p-4 hover:shadow-sm transition-all">
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-tertiary)' }}>活跃课题</p>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink-3)' }}>
+            {doneTodayCount} 项已完成
+          </p>
+        </Link>
+        <Link to="/action/habits" className="card p-4">
+          <p className="text-label mb-1.5">今日打卡</p>
+          <p className="text-2xl text-num" style={{ color: 'var(--color-ink)' }}>
+            {habits.filter((h) => h.logs?.some((l) => isSameDay(startOfDay(new Date(l.date)), today))).length}
+            <span className="text-base" style={{ color: 'var(--color-ink-3)' }}> / {habits.length}</span>
+          </p>
+        </Link>
+        <Link to="/cognition?tab=topics" className="card p-4">
+          <p className="text-label mb-1.5">活跃课题</p>
+          <p className="text-2xl text-num" style={{ color: 'var(--color-ink)' }}>
             {activeTopics.length}
           </p>
         </Link>
-        <Link to="/reflection?tab=daily" className="card p-4 hover:shadow-sm transition-all">
-          <p className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--color-text-tertiary)' }}>反思</p>
-          <p className="text-lg" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-            {todayReflection ? '✓ 已写' : '—'}
+        <Link to="/reflection?tab=daily" className="card p-4">
+          <p className="text-label mb-1.5">今日反思</p>
+          <p
+            className="text-2xl text-num"
+            style={{ color: todayReflection ? 'var(--color-ink)' : 'var(--color-accent)' }}
+          >
+            {todayReflection ? '✓ 已写' : '待写'}
           </p>
-        </Link>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Circle size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-            <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-tertiary)' }}>
-              待办
-            </span>
-          </div>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-            {pendingTodos.length}
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-            {doneTodayCount} 项已完成
-          </p>
-        </div>
-        <div className="card p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-            <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-tertiary)' }}>
-              习惯
-            </span>
-          </div>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-            {habits.filter((h) => h.logs?.some((l) => isSameDay(startOfDay(new Date(l.date)), today))).length}
-            <span className="text-base" style={{ color: 'var(--color-text-tertiary)' }}> / {habits.length}</span>
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-            今日已打卡
-          </p>
-        </div>
-        <Link to="/reflection?tab=daily" className="card p-4 hover:border-slate-200 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-            <span className="text-xs uppercase tracking-widest" style={{ color: 'var(--color-text-tertiary)' }}>
-              反思
-            </span>
-          </div>
-          <p className="text-2xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
-            写今日复盘
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-            记录收获与明日计划
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-ink-3)' }}>
+            {todayReflection ? '记录收获与明日计划' : '花三分钟记录今天'}
           </p>
         </Link>
       </div>
@@ -297,7 +263,7 @@ export default function Today() {
         {/* Todos Section */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            <h2 className="text-[15px] font-semibold" style={{ color: 'var(--color-ink)' }}>
               今日待办
             </h2>
             <Link
@@ -326,7 +292,7 @@ export default function Today() {
                 onClick={handleAddTodo}
                 disabled={addingTodo}
                 className="text-xs px-3 py-1.5 rounded-lg font-medium"
-                style={{ backgroundColor: 'var(--color-text-primary)', color: 'var(--color-text-inverse)' }}
+                style={{ backgroundColor: 'var(--color-ink-soft)', color: 'var(--color-text-inverse)' }}
               >
                 {addingTodo ? '...' : '添加'}
               </button>
@@ -356,7 +322,7 @@ export default function Today() {
                       border: '1.5px solid var(--color-border)',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--color-text-primary)';
+                      e.currentTarget.style.borderColor = 'var(--color-accent)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.borderColor = 'var(--color-border)';
@@ -373,7 +339,7 @@ export default function Today() {
                       {todo.title}
                     </p>
                     {goalName(todo.goalId) && (
-                      <p className="text-[11px] truncate" style={{ color: 'var(--color-text-tertiary)' }}>
+                      <p className="text-xs truncate" style={{ color: 'var(--color-ink-3)' }}>
                         {goalName(todo.goalId)}
                       </p>
                     )}
@@ -398,7 +364,7 @@ export default function Today() {
         {/* Habits Section */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            <h2 className="text-[15px] font-semibold" style={{ color: 'var(--color-ink)' }}>
               习惯打卡
             </h2>
             <Link
@@ -436,7 +402,7 @@ export default function Today() {
                       <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
                         {habit.title}
                       </p>
-                      <p className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>
+                      <p className="text-xs" style={{ color: 'var(--color-ink-3)' }}>
                         {habit.frequency === 'daily' ? '每日' : '每周'}
                       </p>
                     </div>
@@ -446,8 +412,8 @@ export default function Today() {
                       className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
                       style={
                         isTodayLogged
-                          ? { backgroundColor: '#DCFCE7', color: '#16A34A' }
-                          : { backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }
+                          ? { backgroundColor: 'var(--color-success-soft)', color: 'var(--color-success)' }
+                          : { backgroundColor: 'var(--color-paper-2)', color: 'var(--color-ink-2)' }
                       }
                     >
                       {togglingHabit === habit.id ? (

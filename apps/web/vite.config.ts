@@ -8,6 +8,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    assetsInlineLimit: 1024 * 1024,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-data': ['axios', 'zustand'],
+        },
+      },
+    },
   },
   resolve: {
     alias: {

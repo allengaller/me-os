@@ -10,6 +10,7 @@ import {
 } from './service.js';
 import { ensureBuiltinSkills } from './skills.js';
 import { computeNextRunAt } from './scheduler.js';
+import { parseCaptureText, commitCaptures } from './capture.js';
 
 // ==================== 校验 Schema ====================
 
@@ -43,6 +44,11 @@ const ingestSchema = z.object({
     })
     .optional(),
   entries: z.array(entryInputSchema).min(1).max(500),
+});
+
+const captureSchema = z.object({
+  text: z.string().min(1).max(5000),
+  exclude: z.array(z.number().int().min(0)).max(100).optional(),
 });
 
 const listEntriesSchema = z.object({
@@ -298,6 +304,37 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof Error && error.message === '数据源不存在') {
         return reply.code(404).send({ error: error.message });
       }
+      return handleZodError(error, reply, () => {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: '服务器错误' });
+      });
+    }
+  });
+
+  // ---------- 口述打卡 ----------
+
+  fastify.post('/capture/parse', auth, async (request, reply) => {
+    try {
+      const { text } = captureSchema.parse(request.body);
+      return { items: parseCaptureText(text) };
+    } catch (error) {
+      return handleZodError(error, reply, () => {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: '服务器错误' });
+      });
+    }
+  });
+
+  fastify.post('/capture', auth, async (request, reply) => {
+    try {
+      const { text, exclude } = captureSchema.parse(request.body);
+      const items = parseCaptureText(text).filter((item) => !exclude?.includes(item.index));
+      if (items.length === 0) {
+        return reply.code(400).send({ error: '没有可提交的条目' });
+      }
+      const result = await commitCaptures(request.user.userId, items);
+      return reply.code(201).send({ ...result, items });
+    } catch (error) {
       return handleZodError(error, reply, () => {
         fastify.log.error(error);
         return reply.code(500).send({ error: '服务器错误' });

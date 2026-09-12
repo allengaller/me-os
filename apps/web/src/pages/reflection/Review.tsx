@@ -257,7 +257,7 @@ export default function Review() {
                 onClick={() => setPeriod(p)}
                 className={`px-4 py-2 text-sm rounded-lg transition-all ${
                   period === p
-                    ? 'bg-white font-medium'
+                    ? 'bg-[var(--color-surface)] font-medium'
                     : ''
                 }`}
                 style={{

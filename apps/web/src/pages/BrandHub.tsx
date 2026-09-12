@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, Gem, GitBranch, Radio, Package } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Overview from './brand/Overview';
 import Profile from './brand/Profile';
 import Pipeline from './brand/Pipeline';
@@ -71,6 +72,8 @@ export default function BrandHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`brand:${activeTab}`} />
 
       {activeTab === 'overview' && <Overview />}
       {activeTab === 'profile' && <Profile />}

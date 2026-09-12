@@ -411,7 +411,7 @@ export default function Pipeline() {
                             type="text"
                             defaultValue={dist.adaptedTitle || ''}
                             placeholder="平台适配标题"
-                            className="text-xs px-2 py-1 rounded border bg-white"
+                            className="text-xs px-2 py-1 rounded border bg-[var(--color-surface)]"
                             onBlur={(e) => {
                               if (e.target.value !== (dist.adaptedTitle || '')) {
                                 handlePatchDistribution(dist, { adaptedTitle: e.target.value || null });
@@ -422,7 +422,7 @@ export default function Pipeline() {
                             type="text"
                             defaultValue={dist.url || ''}
                             placeholder="发布链接"
-                            className="text-xs px-2 py-1 rounded border bg-white"
+                            className="text-xs px-2 py-1 rounded border bg-[var(--color-surface)]"
                             onBlur={(e) => {
                               if (e.target.value !== (dist.url || '')) {
                                 handlePatchDistribution(dist, { url: e.target.value || null });
@@ -433,7 +433,7 @@ export default function Pipeline() {
                             type="number"
                             defaultValue={dist.views ?? ''}
                             placeholder="阅读/播放"
-                            className="text-xs px-2 py-1 rounded border bg-white"
+                            className="text-xs px-2 py-1 rounded border bg-[var(--color-surface)]"
                             onBlur={(e) => {
                               const v = e.target.value === '' ? null : parseInt(e.target.value, 10);
                               if (v !== dist.views) handlePatchDistribution(dist, { views: v });
@@ -443,7 +443,7 @@ export default function Pipeline() {
                             type="number"
                             defaultValue={dist.likes ?? ''}
                             placeholder="点赞"
-                            className="text-xs px-2 py-1 rounded border bg-white"
+                            className="text-xs px-2 py-1 rounded border bg-[var(--color-surface)]"
                             onBlur={(e) => {
                               const v = e.target.value === '' ? null : parseInt(e.target.value, 10);
                               if (v !== dist.likes) handlePatchDistribution(dist, { likes: v });

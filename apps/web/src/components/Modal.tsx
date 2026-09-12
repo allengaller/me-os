@@ -57,7 +57,7 @@ export default function Modal({ open, onClose, title, children, maxWidth = 'max-
         onClick={onClose}
       />
       <div
-        className="relative bg-white w-full rounded-xl overflow-hidden"
+        className="relative bg-[var(--color-surface)] w-full rounded-xl overflow-hidden"
         style={{
           maxWidth: MAX_WIDTHS[maxWidth.replace('max-w-', '')] ?? maxWidth,
           boxShadow: 'var(--shadow-xl)',

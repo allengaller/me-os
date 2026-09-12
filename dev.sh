@@ -59,7 +59,7 @@ kill_stale_ports() {
       killed=true
     fi
   done
-  $killed && sleep 2
+  if $killed; then sleep 2; fi
 }
 
 # --- Kill stale dev servers by pattern ---
@@ -75,7 +75,7 @@ kill_stale_dev_servers() {
       killed=true
     fi
   done
-  $killed && sleep 2
+  if $killed; then sleep 2; fi
 }
 
 # --- Check if port is free ---
@@ -170,6 +170,8 @@ log "Setting up database..."
 cd "$BACKEND_DIR"
 pnpm db:generate --schema=src/prisma/schema.prisma >/dev/null 2>&1 || warn "Prisma generate had issues"
 pnpm db:push --schema=src/prisma/schema.prisma >/dev/null 2>&1 || { error "Database push failed"; exit 1; }
+# 品牌板块 mock 数据（幂等，数据源 packages/api/src/prisma/brand-seed-data.ts）
+pnpm db:seed:brand >/dev/null 2>&1 || warn "Brand mock seed skipped"
 cd - > /dev/null
 info "Database ready"
 
@@ -188,7 +190,7 @@ info "Backend PID: $BACKEND_PID"
 # Start frontend
 log "Starting frontend..."
 cd "$FRONTEND_DIR"
-pnpm dev -- --port "$FRONTEND_PORT" >> "$LOG_FILE" 2>&1 &
+pnpm dev --port "$FRONTEND_PORT" >> "$LOG_FILE" 2>&1 &
 FRONTEND_PID=$!
 PIDS+=("$FRONTEND_PID")
 cd - > /dev/null
@@ -229,7 +231,7 @@ for i in $(seq 1 20); do
     break
   fi
 
-  ACTUAL_FRONTEND_URL=$(detect_frontend_url)
+  ACTUAL_FRONTEND_URL=$(detect_frontend_url || true)
   if [[ -n "$ACTUAL_FRONTEND_URL" ]]; then
     FRONTEND_READY=true
     break

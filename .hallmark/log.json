@@ -1,0 +1,12 @@
+[
+  {
+    "date": "2026-09-12",
+    "scope": "app",
+    "macrostructure": "Workbench",
+    "theme": "custom",
+    "theme_axes": "light / geometric-sans (Space Grotesk + PingFang SC) / cool-indigo (260)",
+    "vibe": "专业 个人 dashboard 靛蓝 纸白",
+    "enrichment": "none",
+    "brief": "MeOS · 五维人生管理系统 Shell+Today 重设计：修复居中 bug、CJK 字体栈、OKLCH tokens、靛蓝强调色"
+  }
+]

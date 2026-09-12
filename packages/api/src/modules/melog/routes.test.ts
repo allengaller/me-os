@@ -14,6 +14,8 @@ async function cleanup() {
   await prisma.meLogSchedule.deleteMany({ where: { userId: USER_ID } });
   await prisma.meLogSkill.deleteMany({ where: { userId: USER_ID } });
   await prisma.meLogSource.deleteMany({ where: { userId: USER_ID } });
+  await prisma.healthRecord.deleteMany({ where: { userId: USER_ID } });
+  await prisma.todo.deleteMany({ where: { userId: USER_ID } });
   await prisma.user.deleteMany({ where: { id: USER_ID } });
 }
 
@@ -29,6 +31,8 @@ describe('MeLog Routes', () => {
     await prisma.meLogEntry.deleteMany({ where: { userId: USER_ID } });
     await prisma.meLogSource.deleteMany({ where: { userId: USER_ID } });
     await prisma.meLogSchedule.deleteMany({ where: { userId: USER_ID } });
+    await prisma.healthRecord.deleteMany({ where: { userId: USER_ID } });
+    await prisma.todo.deleteMany({ where: { userId: USER_ID } });
   });
 
   afterAll(async () => {
@@ -204,6 +208,83 @@ describe('MeLog Routes', () => {
         expect.arrayContaining([expect.objectContaining({ category: 'note', count: 1 })]),
       );
       expect(overview.json().sources[0]).toMatchObject({ total: 1, connected: 1 });
+    });
+  });
+
+  describe('口述打卡', () => {
+    const TEXT = '今天早上潮汐冥想15分钟，昨天睡眠7小时';
+
+    it('parse 只解析不落库', async () => {
+      const app = await createApp();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/melog/capture/parse',
+        payload: { text: TEXT },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json().items.map((i: { type: string }) => i.type)).toEqual(['meditation', 'sleep']);
+
+      const entries = await app.inject({ method: 'GET', url: '/api/melog/entries' });
+      expect(entries.json().total).toBe(0);
+    });
+
+    it('capture 双写时间线与健康记录，重复提交幂等', async () => {
+      const app = await createApp();
+      const first = await app.inject({ method: 'POST', url: '/api/melog/capture', payload: { text: TEXT } });
+      expect(first.statusCode).toBe(201);
+      expect(first.json()).toMatchObject({ created: 2, updated: 0, healthRecords: 2 });
+
+      const entries = await app.inject({ method: 'GET', url: '/api/melog/entries?category=health' });
+      expect(entries.json().total).toBe(2);
+      expect(await prisma.healthRecord.count({ where: { userId: USER_ID } })).toBe(2);
+
+      const second = await app.inject({ method: 'POST', url: '/api/melog/capture', payload: { text: TEXT } });
+      expect(second.json()).toMatchObject({ created: 0, updated: 2, healthRecords: 0 });
+      expect(await prisma.healthRecord.count({ where: { userId: USER_ID } })).toBe(2);
+    });
+
+    it('exclude 过滤取消勾选的条目', async () => {
+      const app = await createApp();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/melog/capture',
+        payload: { text: TEXT, exclude: [1] },
+      });
+      expect(response.statusCode).toBe(201);
+      expect(response.json().items).toHaveLength(1);
+      expect(response.json().items[0].type).toBe('meditation');
+      expect(await prisma.healthRecord.count({ where: { userId: USER_ID } })).toBe(1);
+    });
+
+    it('全部排除时返回 400', async () => {
+      const app = await createApp();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/melog/capture',
+        payload: { text: TEXT, exclude: [0, 1] },
+      });
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('「待办：」前缀创建待办，不写时间线与健康记录', async () => {
+      const app = await createApp();
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/melog/capture',
+        payload: { text: '待办：周五前交报告，笔记：今天读了一本好书' },
+      });
+      expect(response.statusCode).toBe(201);
+      expect(response.json()).toMatchObject({ created: 1, updated: 0, healthRecords: 0, todos: 1 });
+
+      const todos = await prisma.todo.findMany({ where: { userId: USER_ID } });
+      expect(todos).toHaveLength(1);
+      expect(todos[0].title).toBe('周五前交报告');
+      expect(todos[0].source).toBe('capture');
+
+      const entries = await app.inject({ method: 'GET', url: '/api/melog/entries?category=note' });
+      expect(entries.json().total).toBe(1);
+      expect(entries.json().entries[0].content).toContain('一本好书');
+      expect(await prisma.healthRecord.count({ where: { userId: USER_ID } })).toBe(0);
     });
   });
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
 interface QuickStats {
@@ -7,6 +7,9 @@ interface QuickStats {
   reflectionStreak: number;
 }
 
+const MEOS_APP_URLS = ['http://localhost:3000', 'http://localhost:5173', 'https://meos.app'];
+const API_BASE = 'http://localhost:3001/api';
+
 export default function Popup() {
   const [stats, setStats] = useState<QuickStats>({
     todosToday: 0,
@@ -14,9 +17,11 @@ export default function Popup() {
     reflectionStreak: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [todoTitle, setTodoTitle] = useState('');
+  const [status, setStatus] = useState<{ message: string; isError: boolean } | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Load stats from chrome storage or use defaults
     chrome.storage.local.get(['meos_stats'], (result) => {
       if (result.meos_stats) {
         setStats(result.meos_stats);
@@ -26,11 +31,56 @@ export default function Popup() {
   }, []);
 
   const openMeOS = () => {
-    chrome.tabs.create({ url: 'http://localhost:5173' });
+    chrome.tabs.create({ url: 'http://localhost:3000' });
   };
 
-  const quickAddTodo = () => {
-    chrome.tabs.create({ url: 'http://localhost:5173/action?new=todo' });
+  const getToken = (cb: (token: string | null) => void) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const tab = tabs[0];
+      if (tab && tab.url && MEOS_APP_URLS.some((u) => tab.url.startsWith(u))) {
+        chrome.tabs.sendMessage(tab.id, { type: 'GET_MEOS_TOKEN' }, (res) => {
+          if (res && res.token) return cb(res.token);
+          cb(null);
+        });
+        return;
+      }
+      chrome.storage.local.get(['meos_token'], (result) => cb(result.meos_token || null));
+    });
+  };
+
+  const createTodo = (title: string) => {
+    setStatus({ message: '添加中…', isError: false });
+    getToken((token) => {
+      if (!token) {
+        setStatus({ message: '未登录：先打开一次 MeOS 页面（localhost:3000）再试', isError: true });
+        return;
+      }
+      fetch(`${API_BASE}/todos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, source: 'extension' }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          setStatus({ message: '已添加 ✓', isError: false });
+          setTodoTitle('');
+        })
+        .catch(() => {
+          setStatus({ message: '添加失败，请确认后端已启动（localhost:3001）', isError: true });
+        });
+    });
+  };
+
+  const handleAdd = () => {
+    const title = todoTitle.trim();
+    if (!title) {
+      inputRef.current?.focus();
+      return;
+    }
+    createTodo(title);
   };
 
   if (loading) {
@@ -63,12 +113,26 @@ export default function Popup() {
         </div>
       </div>
 
+      <div className="quick-add">
+        <input
+          ref={inputRef}
+          type="text"
+          value={todoTitle}
+          onChange={(e) => setTodoTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleAdd();
+          }}
+          placeholder="直接输入待办，回车添加"
+        />
+        <div className={`todo-status${status?.isError ? ' error' : ''}`}>{status?.message ?? ''}</div>
+      </div>
+
       <div className="actions">
         <button onClick={openMeOS} className="btn btn-primary">
           打开 MeOS
         </button>
-        <button onClick={quickAddTodo} className="btn btn-secondary">
-          快速添加待办
+        <button onClick={handleAdd} className="btn btn-secondary">
+          添加待办
         </button>
       </div>
 
@@ -123,6 +187,29 @@ export default function Popup() {
         .actions {
           display: flex;
           gap: 8px;
+        }
+        .quick-add {
+          margin: 12px 0;
+        }
+        .quick-add input {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          font-size: 13px;
+          outline: none;
+        }
+        .quick-add input:focus {
+          border-color: #4f46e5;
+        }
+        .todo-status {
+          margin-top: 6px;
+          font-size: 12px;
+          color: #10b981;
+          min-height: 16px;
+        }
+        .todo-status.error {
+          color: #ef4444;
         }
         .btn {
           flex: 1;

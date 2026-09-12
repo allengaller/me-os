@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { StickyNote, BookOpen, BrainCircuit, Lightbulb } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Notes from './cognition/Notes';
 import Reading from './cognition/Reading';
 import Topics from './cognition/Topics';
@@ -70,6 +71,8 @@ export default function CognitionHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`cognition:${activeTab}`} />
 
       {activeTab === 'notes' && <Notes />}
       {activeTab === 'reading' && <Reading />}

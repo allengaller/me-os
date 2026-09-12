@@ -101,7 +101,7 @@ export default function Sources() {
         <button
           onClick={() => setShowForm(!showForm)}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg text-white transition-opacity hover:opacity-90"
-          style={{ backgroundColor: 'var(--color-text-primary)' }}
+          style={{ backgroundColor: 'var(--color-ink-soft)' }}
         >
           {showForm ? <X size={13} /> : <Plus size={13} />}
           {showForm ? '取消' : '接入数据源'}
@@ -205,7 +205,7 @@ export default function Sources() {
           <button
             type="submit"
             className="px-4 py-2 text-xs rounded-lg text-white transition-opacity hover:opacity-90"
-            style={{ backgroundColor: 'var(--color-text-primary)' }}
+            style={{ backgroundColor: 'var(--color-ink-soft)' }}
           >
             创建数据源
           </button>
@@ -223,7 +223,7 @@ export default function Sources() {
             <button
               onClick={() => setShowForm(true)}
               className="px-4 py-2 text-xs rounded-lg text-white"
-              style={{ backgroundColor: 'var(--color-text-primary)' }}
+              style={{ backgroundColor: 'var(--color-ink-soft)' }}
             >
               接入第一个数据源
             </button>

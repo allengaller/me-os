@@ -235,7 +235,7 @@ export default function Skills() {
                   onClick={() => handleRun(skill)}
                   disabled={runningSlug === skill.slug}
                   className="flex items-center gap-1 px-3 py-1.5 text-[11px] rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--color-text-primary)' }}
+                  style={{ backgroundColor: 'var(--color-ink-soft)' }}
                 >
                   <Play size={11} />
                   {runningSlug === skill.slug ? '运行中…' : '运行'}

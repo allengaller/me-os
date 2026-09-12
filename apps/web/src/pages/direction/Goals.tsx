@@ -307,7 +307,7 @@ export default function Goals() {
           <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow-sm' : ''}`}
+              className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-[var(--color-surface)] shadow-sm' : ''}`}
               style={{ color: viewMode === 'list' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
               title="列表视图"
             >
@@ -315,7 +315,7 @@ export default function Goals() {
             </button>
             <button
               onClick={() => setViewMode('board')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'board' ? 'bg-white shadow-sm' : ''}`}
+              className={`p-2 rounded-md transition-all ${viewMode === 'board' ? 'bg-[var(--color-surface)] shadow-sm' : ''}`}
               style={{ color: viewMode === 'board' ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)' }}
               title="看板视图"
             >
@@ -402,8 +402,8 @@ export default function Goals() {
               onClick={() => setActiveTab(tab)}
               className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize ${
                 activeTab === tab
-                  ? 'bg-[var(--color-text-primary)] text-white'
-                  : 'bg-white text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-text-tertiary)]'
+                  ? 'bg-[var(--color-ink-soft)] text-white'
+                  : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border border-[var(--color-border)] hover:border-[var(--color-text-tertiary)]'
               }`}
             >
               {tab}
@@ -415,7 +415,7 @@ export default function Goals() {
 
       <div className="space-y-3">
         {filteredGoals.length === 0 ? (
-          <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-dashed border-slate-200 p-12 text-center">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-50 flex items-center justify-center">
               <Target className="w-5 h-5 text-slate-400" />
             </div>
@@ -438,7 +438,7 @@ export default function Goals() {
             return (
               <div
                 key={goal.id}
-                className="group bg-white rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
+                className="group bg-[var(--color-surface)] rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
               >
                 <div className="p-5">
                   <div className="flex justify-between items-start gap-4">
@@ -483,7 +483,7 @@ export default function Goals() {
                           <div className="flex items-center gap-3">
                             <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-slate-900 rounded-full transition-all duration-300"
+                                className="h-full bg-[var(--color-ink-soft)] rounded-full transition-all duration-300"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>
@@ -555,7 +555,7 @@ export default function Goals() {
                                         />
                                         <button
                                           onClick={() => handleSaveKR(kr)}
-                                          className="px-2 py-1 bg-slate-900 text-white text-[10px] rounded hover:bg-slate-800"
+                                          className="px-2 py-1 bg-[var(--color-ink-soft)] text-white text-[10px] rounded hover:bg-slate-800"
                                         >
                                           Save
                                         </button>
@@ -620,7 +620,7 @@ export default function Goals() {
                         <div className="flex gap-2">
                           <button
                             type="submit"
-                            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all"
+                            className="px-4 py-2 bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg transition-all"
                           >
                             Add
                           </button>

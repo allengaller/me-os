@@ -2,9 +2,9 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import api from '../lib/api';
 import { Plus, Activity, Trash2, Edit2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import Modal from './Modal';
 import LoadingSpinner from './LoadingSpinner';
+import LineChart from './charts/LineChart';
 
 type HealthType = 'sleep' | 'exercise' | 'weight' | 'mood' | 'energy' | 'water';
 
@@ -179,7 +179,7 @@ export default function HealthTrackerView() {
             onClick={() => setActiveType(type)}
             className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
               activeType === type
-                ? 'bg-white font-medium'
+                ? 'bg-[var(--color-surface)] font-medium'
                 : ''
             }`}
             style={{
@@ -248,29 +248,12 @@ export default function HealthTrackerView() {
       <div className="card p-5 mb-6">
         <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>近14天趋势</p>
         {chartData.some((d) => d.value > 0) ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
-              <Tooltip
-                contentStyle={{
-                  background: '#fff',
-                  border: '1px solid #f1f5f9',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke={TYPE_COLORS[activeType]}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: TYPE_COLORS[activeType] }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LineChart
+            data={chartData}
+            xKey="date"
+            series={[{ key: 'value', color: TYPE_COLORS[activeType] }]}
+            height={200}
+          />
         ) : (
           <div className="h-[200px] flex items-center justify-center">
             <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>暂无数据</p>

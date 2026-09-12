@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import { BRAND_MOCK_USER_ID, ensureBrandMockUser, seedBrandMockData } from './seed-brand.js';
 
 const prisma = new PrismaClient();
 
@@ -275,6 +276,14 @@ async function main() {
     });
   }
   console.log('✅ Created MeLog demo data (3 sources, 7 entries, 3 builtin skills)');
+
+  // ==================== 品牌板块示例数据 ====================
+  // 品牌面板在 dev 模式固定以 mock-user-1 身份访问（src/server.ts 认证旁路），数据种给该用户；
+  // 同时补齐该用户的 User 行，否则 dev 模式写库会因外键约束失败。
+  await ensureBrandMockUser(prisma);
+  await seedBrandMockData(prisma, BRAND_MOCK_USER_ID);
+  console.log('✅ Created Brand demo data (mock-user-1: 4 pillars, 7 channels, 9 contents, 4 works)');
+  console.log('   数据源：src/prisma/brand-seed-data.ts，可直接修改后重新运行 pnpm db:seed:brand');
 
   console.log('\n🎉 Database seed completed!');
   console.log('\n📋 Demo credentials:');

@@ -32,7 +32,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-100 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+      <div className="max-w-md w-full bg-[var(--color-surface)] rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">MeOS</h1>
           <p className="text-gray-600">人生管理系统</p>
@@ -88,6 +88,12 @@ export default function Login() {
           还没有账号？{' '}
           <Link to="/register" className="text-primary-600 hover:text-primary-700 font-medium">
             立即注册
+          </Link>
+        </p>
+
+        <p className="mt-3 text-center text-xs text-gray-400">
+          <Link to="/" className="hover:text-gray-600 transition-colors">
+            返回首页 · 无需注册直接体验
           </Link>
         </p>
       </div>

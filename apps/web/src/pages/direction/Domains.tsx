@@ -132,7 +132,7 @@ export default function Domains() {
         {activeTab === 'manage' && (
           <button
             onClick={openCreate}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2.5 inline-flex items-center gap-2"
+            className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-4 py-2.5 inline-flex items-center gap-2"
           >
             <Plus size={16} />
             新增领域
@@ -145,7 +145,7 @@ export default function Domains() {
           onClick={() => setActiveTab('manage')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === 'manage'
-              ? 'bg-white text-slate-900 shadow-sm'
+              ? 'bg-[var(--color-surface)] text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -155,7 +155,7 @@ export default function Domains() {
           onClick={() => setActiveTab('balance')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
             activeTab === 'balance'
-              ? 'bg-white text-slate-900 shadow-sm'
+              ? 'bg-[var(--color-surface)] text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -168,14 +168,14 @@ export default function Domains() {
       ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {domains.length === 0 && (
-          <div className="col-span-2 bg-white rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-400">
+          <div className="col-span-2 bg-[var(--color-surface)] rounded-xl border border-dashed border-slate-200 p-8 text-center text-slate-400">
             暂无领域，点击上方按钮添加
           </div>
         )}
         {domains.map((domain) => (
           <div
             key={domain.id}
-            className="bg-white rounded-xl border border-slate-100 p-5 group hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
+            className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 group hover:border-slate-200 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ export default function Domains() {
                       {preset.label}
                     </span>
                     {isSelected && (
-                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-text-primary)' }}>
+                      <span className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--color-ink-soft)' }}>
                         <Check size={10} color="#fff" />
                       </span>
                     )}
@@ -310,7 +310,7 @@ export default function Domains() {
           <button
             onClick={handleSubmit}
             disabled={submitting || !form.name.trim() || !form.identifier.trim()}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-5 py-2.5 disabled:opacity-50"
+            className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-5 py-2.5 disabled:opacity-50"
           >
             {editingDomain ? '保存' : '创建'}
           </button>

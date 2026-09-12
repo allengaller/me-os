@@ -40,6 +40,11 @@ export default [
     },
   },
   {
+    // Node 端代码的未定义标识符由 tsc 检查；no-undef 会对 console/process 等 Node 全局误报
+    files: ['packages/connectors/**/*.ts'],
+    rules: { 'no-undef': 'off' },
+  },
+  {
     ignores: ['dist/', 'node_modules/', '*.config.*', '.eslintrc.cjs'],
   },
 ];

@@ -2,8 +2,8 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import api from '../../lib/api';
 import { Plus, Activity, Trash2 } from 'lucide-react';
 import { format, subDays } from 'date-fns';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import LineChart from '../../components/charts/LineChart';
 
 type HealthType = 'sleep' | 'exercise' | 'weight' | 'mood' | 'energy' | 'water';
 
@@ -146,7 +146,7 @@ export default function Health() {
             onClick={() => setActiveType(type)}
             className={`px-3 py-1.5 rounded-md text-sm transition-all ${
               activeType === type
-                ? 'bg-white text-slate-900 shadow-sm'
+                ? 'bg-[var(--color-surface)] text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -155,7 +155,7 @@ export default function Health() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-100 p-5 mb-6">
+      <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 mb-6">
         <div className="flex gap-3">
           <input
             type="number"
@@ -176,7 +176,7 @@ export default function Health() {
           />
           <button
             onClick={handleAdd}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2.5 flex items-center gap-2 transition-colors shrink-0"
+            className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-4 py-2.5 flex items-center gap-2 transition-colors shrink-0"
           >
             <Plus className="w-4 h-4" />
             添加
@@ -186,18 +186,18 @@ export default function Health() {
 
       {summary && (
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5">
             <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">平均值</p>
             <p className="text-2xl font-light text-slate-900">
               {summary.avg ? summary.avg.toFixed(1) : '-'}
               <span className="text-sm text-slate-400 ml-1">{TYPE_UNITS[activeType]}</span>
             </p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5">
             <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">记录数</p>
             <p className="text-2xl font-light text-slate-900">{summary.count || 0}</p>
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-5">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5">
             <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">最新值</p>
             <p className="text-2xl font-light text-slate-900">
               {summary.latest ? summary.latest.toFixed(1) : '-'}
@@ -207,32 +207,15 @@ export default function Health() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-100 p-5 mb-6">
+      <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 mb-6">
         <p className="text-sm text-slate-500 mb-4">近14天趋势</p>
         {chartData.some((d) => d.value > 0) ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
-              <Tooltip
-                contentStyle={{
-                  background: '#fff',
-                  border: '1px solid #f1f5f9',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke={TYPE_COLORS[activeType]}
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: TYPE_COLORS[activeType] }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LineChart
+            data={chartData}
+            xKey="date"
+            series={[{ key: 'value', color: TYPE_COLORS[activeType] }]}
+            height={200}
+          />
         ) : (
           <div className="h-[200px] flex items-center justify-center">
             <p className="text-sm text-slate-400">暂无数据</p>
@@ -244,7 +227,7 @@ export default function Health() {
         {records.map((record) => (
           <div
             key={record.id}
-            className="bg-white rounded-xl border border-slate-100 p-4 flex items-center justify-between group hover:border-slate-200 transition-all"
+            className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-4 flex items-center justify-between group hover:border-slate-200 transition-all"
           >
             <div className="flex items-center gap-4">
               <Activity className="w-4 h-4 text-slate-400 shrink-0" />
@@ -268,7 +251,7 @@ export default function Health() {
         ))}
 
         {records.length === 0 && (
-          <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-dashed border-slate-200 p-12 text-center">
             <Activity className="w-8 h-8 text-slate-300 mx-auto mb-3" />
             <p className="text-sm text-slate-500">暂无记录</p>
           </div>

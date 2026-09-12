@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Trash2, LineChart as LineChartIcon } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import LineChart from '../../components/charts/LineChart';
 import api from '../../lib/api';
 import Modal from '../../components/Modal';
 import FormField from '../../components/FormField';
@@ -349,15 +349,13 @@ export default function Channels() {
           </p>
         ) : (
           <div style={{ height: 260 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="followers" stroke="#6366f1" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart
+              data={trendData}
+              xKey="date"
+              series={[{ key: 'followers', color: '#6366f1', name: '粉丝' }]}
+              height={260}
+              showGrid
+            />
           </div>
         )}
       </Modal>

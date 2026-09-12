@@ -104,7 +104,7 @@ function ReadingModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden">
+      <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-50">
           <h2 className="text-lg font-medium text-slate-900">
             {item ? '编辑阅读' : '添加阅读'}
@@ -188,7 +188,7 @@ function ReadingModal({
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
             >
               保存
             </button>
@@ -311,7 +311,7 @@ export default function Reading() {
           </div>
           <button
             onClick={() => { setEditingItem(null); setShowModal(true); }}
-            className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg px-4 py-2.5 flex items-center gap-2 transition-colors"
+            className="bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white text-sm font-medium rounded-lg px-4 py-2.5 flex items-center gap-2 transition-colors"
           >
             <Plus className="w-4 h-4" />
             添加阅读
@@ -324,7 +324,7 @@ export default function Reading() {
           onClick={() => setActiveStatus('all')}
           className={`px-3 py-1.5 rounded-md text-sm transition-all ${
             activeStatus === 'all'
-              ? 'bg-white text-slate-900 shadow-sm'
+              ? 'bg-[var(--color-surface)] text-slate-900 shadow-sm'
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
@@ -336,7 +336,7 @@ export default function Reading() {
             onClick={() => setActiveStatus(status)}
             className={`px-3 py-1.5 rounded-md text-sm transition-all ${
               activeStatus === status
-                ? 'bg-white text-slate-900 shadow-sm'
+                ? 'bg-[var(--color-surface)] text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
@@ -349,7 +349,7 @@ export default function Reading() {
         {filteredItems.map((item) => (
           <div
             key={item.id}
-            className="bg-white rounded-xl border border-slate-100 p-5 group hover:border-slate-200 transition-all"
+            className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 group hover:border-slate-200 transition-all"
           >
             <div
               className="flex items-start justify-between cursor-pointer"

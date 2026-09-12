@@ -1,8 +1,16 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { format, startOfDay } from 'date-fns';
 import { Calendar, Plus, X, Save, Sparkles, Trash2 } from 'lucide-react';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+
+interface TodayData {
+  date: string;
+  summary: string;
+  todos: { total: number; createdToday: number; items: string[] };
+  habits: { total: number; items: string[] };
+  health: { total: number; items: { type: string; value: number; unit: string; label: string }[] };
+}
 
 const MOOD_OPTIONS = [
   { emoji: '😊', value: 'happy' },
@@ -40,6 +48,8 @@ export default function Daily() {
   const [tags, setTags] = useState('');
   const [content, setContent] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [todayData, setTodayData] = useState<TodayData | null>(null);
+  const prefilledDate = useRef<string | null>(null);
 
   const [celebInput, setCelebInput] = useState('');
   const [improvInput, setImprovInput] = useState('');
@@ -86,6 +96,44 @@ export default function Daily() {
       setContent('');
     }
   }, [selectedDate, reflections]);
+
+  // 当日数据：拉取概况，无反思草稿时自动预填到「自由记录」
+  useEffect(() => {
+    let cancelled = false;
+    setTodayData(null);
+    const target = format(startOfDay(new Date(selectedDate)), 'yyyy-MM-dd');
+    const hasReflection = reflections.some((r) => {
+      const rawDate = r.date || r.createdAt;
+      if (!rawDate) return false;
+      return format(startOfDay(new Date(rawDate)), 'yyyy-MM-dd') === target;
+    });
+
+    api
+      .get(`/reflections/today-summary?date=${selectedDate}`)
+      .then((res) => {
+        if (cancelled) return;
+        const data = res.data as TodayData;
+        setTodayData(data);
+        if (!hasReflection && data.summary && prefilledDate.current !== selectedDate) {
+          prefilledDate.current = selectedDate;
+          setContent(data.summary);
+        }
+      })
+      .catch(() => {
+        // 汇总失败不影响反思填写
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate, reflections]);
+
+  const handleInsertSummary = () => {
+    if (!todayData?.summary) return;
+    setContent((prev) =>
+      prev.trim() ? `${prev.trim()}\n\n今日概况：${todayData.summary}` : `今日概况：${todayData.summary}`,
+    );
+  };
 
   const addCeleb = () => {
     const trimmed = celebInput.trim();
@@ -352,8 +400,42 @@ export default function Daily() {
       </div>
 
       <div className="card p-5">
-        <h3 className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>今日数据</h3>
-        <p className="text-sm mt-2" style={{ color: 'var(--color-text-tertiary)' }}>当日数据汇总功能开发中</p>
+        <h3 className="text-xs font-medium mb-3" style={{ color: 'var(--color-text-tertiary)' }}>今日数据</h3>
+        {todayData && todayData.summary ? (
+          <>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              {todayData.summary}
+            </p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span
+                className="px-2.5 py-1 rounded-full text-xs"
+                style={{ backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
+              >
+                待办完成 {todayData.todos.total}（新增 {todayData.todos.createdToday}）
+              </span>
+              <span
+                className="px-2.5 py-1 rounded-full text-xs"
+                style={{ backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
+              >
+                习惯打卡 {todayData.habits.total} 项
+              </span>
+              <span
+                className="px-2.5 py-1 rounded-full text-xs"
+                style={{ backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
+              >
+                健康记录 {todayData.health.total} 条
+              </span>
+            </div>
+            <button onClick={handleInsertSummary} className="mt-3 btn btn-ghost text-sm">
+              <Sparkles className="w-3.5 h-3.5" />
+              插入到自由记录
+            </button>
+          </>
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+            今天还没有数据。待办完成、习惯打卡、健康记录会汇总到这里，并自动预填到「自由记录」。
+          </p>
+        )}
       </div>
     </div>
   );

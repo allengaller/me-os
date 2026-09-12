@@ -123,7 +123,7 @@ function ContactModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden">
+      <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden">
         <div className="px-6 py-5 border-b border-slate-50">
           <h2 className="text-lg font-medium text-slate-900">
             {contact ? '编辑联系人' : '添加联系人'}
@@ -228,7 +228,7 @@ function ContactModal({
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+              className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
             >
               保存
             </button>
@@ -366,7 +366,7 @@ export default function Contacts() {
           <button
             onClick={() => setActiveRelation('all')}
             className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-              activeRelation === 'all' ? 'bg-white' : ''
+              activeRelation === 'all' ? 'bg-[var(--color-surface)]' : ''
             }`}
             style={{
               backgroundColor: activeRelation === 'all' ? 'var(--color-surface)' : 'transparent',
@@ -381,7 +381,7 @@ export default function Contacts() {
               key={rel}
               onClick={() => setActiveRelation(rel)}
               className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                activeRelation === rel ? 'bg-white' : ''
+                activeRelation === rel ? 'bg-[var(--color-surface)]' : ''
               }`}
               style={{
                 backgroundColor: activeRelation === rel ? 'var(--color-surface)' : 'transparent',
@@ -414,7 +414,7 @@ export default function Contacts() {
         {filteredContacts.map((contact) => (
           <div
             key={contact.id}
-            className="bg-white rounded-xl border border-slate-100 p-5 group hover:border-slate-200 transition-all"
+            className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-5 group hover:border-slate-200 transition-all"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">

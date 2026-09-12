@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Dumbbell } from 'lucide-react';
+import MethodologyCard from '../components/MethodologyCard';
 import Todos from './action/Todos';
 import Habits from './action/Habits';
 
@@ -66,6 +67,8 @@ export default function ActionHub() {
           );
         })}
       </div>
+
+      <MethodologyCard page={`action:${activeTab}`} />
 
       {activeTab === 'todos' && <Todos />}
       {activeTab === 'habits' && <Habits />}

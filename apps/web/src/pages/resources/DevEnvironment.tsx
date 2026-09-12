@@ -169,7 +169,7 @@ export default function DevEnvironment() {
           <input type="file" accept=".md" onChange={handleFileImport} ref={fileRef} className="hidden" />
           <button
             onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:text-slate-900 transition-all"
+            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 bg-[var(--color-surface)] border border-slate-200 rounded-lg hover:border-slate-300 hover:text-slate-900 transition-all"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -179,7 +179,7 @@ export default function DevEnvironment() {
           {categories.length > 0 && (
             <button
               onClick={handleExport}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -191,7 +191,7 @@ export default function DevEnvironment() {
       </div>
 
       {categories.length === 0 ? (
-        <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
+        <div className="bg-[var(--color-surface)] rounded-xl border border-dashed border-slate-200 p-12 text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-slate-50 flex items-center justify-center">
             <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -201,7 +201,7 @@ export default function DevEnvironment() {
           <p className="text-xs text-slate-400 mb-4">点击按钮加载开发环境报告文件</p>
           <button
             onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
           >
             导入开发环境报告
           </button>
@@ -215,8 +215,8 @@ export default function DevEnvironment() {
                 onClick={() => setSelectedCategory(cat.title)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   selectedCategory === cat.title
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900'
+                    ? 'bg-[var(--color-ink-soft)] text-white'
+                    : 'bg-[var(--color-surface)] text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900'
                 }`}
               >
                 {cat.title} ({cat.items.length})
@@ -227,7 +227,7 @@ export default function DevEnvironment() {
           <div className="flex justify-end mb-4">
             <button
               onClick={handleAdd}
-              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all"
+              className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -236,7 +236,7 @@ export default function DevEnvironment() {
             </button>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+          <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-100">
@@ -282,18 +282,18 @@ export default function DevEnvironment() {
       {showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ animation: 'fadeIn 0.2s ease-out' }}>
           <div className="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px]" onClick={() => setShowEditModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
+          <div className="relative bg-[var(--color-surface)] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] w-full max-w-md overflow-hidden" style={{ animation: 'slideUp 0.3s ease-out' }}>
             <div className="px-6 py-5 border-b border-slate-50">
               <h2 className="text-lg font-medium text-slate-900">{editingItem ? '编辑项目' : '添加项目'}</h2>
             </div>
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-2">名称 *</label>
-                <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all" placeholder="例如: Node.js" />
+                <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all" placeholder="例如: Node.js" />
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-2">类型</label>
-                <select value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all">
+                <select value={editForm.type} onChange={(e) => setEditForm({ ...editForm, type: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all">
                   <option value="运行时">运行时</option>
                   <option value="应用">应用</option>
                   <option value="包管理器">包管理器</option>
@@ -302,15 +302,15 @@ export default function DevEnvironment() {
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-2">版本</label>
-                <input type="text" value={editForm.version} onChange={(e) => setEditForm({ ...editForm, version: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all" placeholder="例如: 25.9.0" />
+                <input type="text" value={editForm.version} onChange={(e) => setEditForm({ ...editForm, version: e.target.value })} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all" placeholder="例如: 25.9.0" />
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-slate-500 uppercase tracking-widest mb-2">用途简介</label>
-                <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-white transition-all resize-none" placeholder="简述用途..." />
+                <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="w-full px-4 py-3 bg-slate-50/50 border border-slate-100 rounded-lg text-sm focus:outline-none focus:border-slate-200 focus:bg-[var(--color-surface)] transition-all resize-none" placeholder="简述用途..." />
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowEditModal(false)} className="flex-1 px-4 py-3 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all">取消</button>
-                <button onClick={handleSave} className="flex-1 px-4 py-3 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-all">保存</button>
+                <button onClick={handleSave} className="flex-1 px-4 py-3 text-sm font-medium text-white bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] rounded-lg transition-all">保存</button>
               </div>
             </div>
           </div>

@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 import { Trash2, Clock, History } from 'lucide-react';
 import api from '../lib/api';
 import LoadingSpinner from './LoadingSpinner';
 import { DomainIconMini } from './DomainIcon';
+import RadarChart from './charts/RadarChart';
 
 interface ScoreRecord {
   id: string;
@@ -185,14 +185,7 @@ export default function BalanceWheelView() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="card p-6">
             <h2 className="text-sm font-medium mb-4" style={{ color: 'var(--color-text-primary)' }}>平衡轮可视化</h2>
-            <ResponsiveContainer width="100%" height={360}>
-              <RadarChart data={chartData}>
-                <PolarGrid stroke="var(--color-border)" />
-                <PolarAngleAxis dataKey="domain" tick={{ fill: 'var(--color-text-secondary)', fontSize: 12 }} />
-                <PolarRadiusAxis domain={[0, 10]} tick={{ fill: 'var(--color-text-tertiary)', fontSize: 10 }} />
-                <Radar name="当前评分" dataKey="score" stroke="var(--color-accent)" fill="var(--color-accent)" fillOpacity={0.3} />
-              </RadarChart>
-            </ResponsiveContainer>
+            <RadarChart data={chartData.map((d) => ({ label: d.domain, value: d.score }))} max={10} />
           </div>
 
           <div className="card p-6">
@@ -211,7 +204,7 @@ export default function BalanceWheelView() {
                       max="10"
                       value={scores[domain.id] || 5}
                       onChange={(e) => setScores({ ...scores, [domain.id]: parseInt(e.target.value) })}
-                      className="flex-1 h-1 bg-[var(--color-bg-tertiary)] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-text-primary)]"
+                      className="flex-1 h-1 bg-[var(--color-bg-tertiary)] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[var(--color-ink-soft)]"
                     />
                     <span className="text-lg w-6 text-center tabular-nums" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--color-text-primary)' }}>
                       {scores[domain.id] || 5}

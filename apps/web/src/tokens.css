@@ -1,0 +1,124 @@
+/*
+ * Hallmark · genre: modern-minimal · macrostructure: Workbench
+ * design-system: DESIGN.md · designed-as-app
+ * theme: 微暖纸白 + 深墨 + 静谧靛蓝（anchor hue 260）
+ * axes: light paper / geometric-sans display (Space Grotesk + PingFang SC) / cool accent (indigo)
+ */
+
+:root {
+  /* Paper & surfaces */
+  --color-paper: oklch(97.3% 0.004 260);
+  --color-paper-2: oklch(95.4% 0.005 260);
+  --color-paper-3: oklch(92.8% 0.007 260);
+  --color-surface: oklch(99.4% 0.002 260);
+
+  /* Rules */
+  --color-border: oklch(88% 0.01 260);
+  --color-border-light: oklch(92.5% 0.006 260);
+
+  /* Ink (all ≥ 4.5:1 on paper/surface) */
+  --color-ink: oklch(22% 0.016 260);
+  --color-ink-soft: #55524D;
+  --color-ink-soft-hover: #45423C;
+  --color-ink-2: oklch(44% 0.014 260);
+  --color-ink-3: oklch(54% 0.014 260);
+  --color-ink-inverse: oklch(97.3% 0.004 260);
+
+  /* Accent — 静谧靛蓝, highlighter not fill (≤5% viewport) */
+  --color-accent: oklch(48% 0.13 260);
+  --color-accent-hover: oklch(42% 0.13 260);
+  --color-accent-ink: oklch(97.3% 0.004 260);
+  --color-accent-soft: oklch(95.2% 0.022 260);
+  --color-focus: oklch(55% 0.17 260);
+
+  /* Semantic */
+  --color-success: oklch(50% 0.12 155);
+  --color-success-soft: oklch(95% 0.045 155);
+  --color-warning: oklch(58% 0.12 75);
+  --color-warning-soft: oklch(95% 0.05 85);
+  --color-error: oklch(52% 0.16 25);
+  --color-error-soft: oklch(95% 0.04 25);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'DM Sans', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'PingFang SC', monospace;
+
+  /* Spacing (4-pt) */
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+
+  /* Type scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Elevation (indigo-tinted shadows) */
+  --shadow-sm: 0 1px 2px oklch(22% 0.016 260 / 0.05);
+  --shadow-md: 0 4px 12px oklch(22% 0.016 260 / 0.07);
+  --shadow-lg: 0 8px 30px oklch(22% 0.016 260 / 0.09);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* ---- Legacy aliases (hub pages still reference these names) ---- */
+  --color-bg: var(--color-paper);
+  --color-bg-secondary: var(--color-paper-2);
+  --color-bg-tertiary: var(--color-paper-3);
+  --color-text-primary: var(--color-ink);
+  --color-text-secondary: var(--color-ink-2);
+  --color-text-tertiary: var(--color-ink-3);
+  --color-text-inverse: var(--color-ink-inverse);
+  --color-accent-muted: var(--color-ink-2);
+}
+
+/* ---- 深夜模式：暖调暗色（防止刺眼） ---- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-paper: oklch(16.5% 0.008 260);
+  --color-paper-2: oklch(19.5% 0.009 260);
+  --color-paper-3: oklch(23% 0.01 260);
+  --color-surface: oklch(21.5% 0.009 260);
+
+  --color-border: oklch(30% 0.012 260);
+  --color-border-light: oklch(25.5% 0.01 260);
+
+  --color-ink: oklch(92% 0.006 260);
+  --color-ink-2: oklch(74% 0.01 260);
+  --color-ink-3: oklch(58% 0.012 260);
+
+  --color-ink-soft: oklch(28% 0.012 260);
+  --color-ink-soft-hover: oklch(34% 0.012 260);
+
+  --color-accent: oklch(66% 0.14 260);
+  --color-accent-hover: oklch(72% 0.13 260);
+  --color-accent-ink: oklch(16% 0.01 260);
+  --color-accent-soft: oklch(34% 0.07 260);
+  --color-focus: oklch(68% 0.15 260);
+
+  --color-success: oklch(72% 0.11 155);
+  --color-success-soft: oklch(30% 0.06 155);
+  --color-warning: oklch(76% 0.1 75);
+  --color-warning-soft: oklch(30% 0.05 85);
+  --color-error: oklch(72% 0.14 25);
+  --color-error-soft: oklch(32% 0.07 25);
+}

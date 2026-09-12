@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogOut } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Menu, X, LogOut, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { applyTheme, type Theme } from '../lib/theme';
 import ToastContainer from './ToastContainer';
 
 interface NavItem {
   label: string;
   path: string;
   icon: string;
+  prominent?: boolean;
 }
 
 const navItems: NavItem[] = [
+  { label: '今日', path: '/', icon: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z', prominent: true },
+  { label: '工作台', path: '/workbench', icon: 'M4 4h6v6H4V4zm10 0h6v3h-6V4zm0 6h6v10h-6V10zM4 14h6v6H4v-6z', prominent: true },
   {
     label: '方向',
     path: '/direction',
@@ -51,13 +55,26 @@ const navItems: NavItem[] = [
 export default function Layout() {
   const { user, logout } = useAuthStore();
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() =>
+    (document.documentElement.dataset.theme as Theme) || 'light'
+  );
+  const isActive = (path: string) =>
+    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const navLink = (active: boolean, prominent = false) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+      active
+        ? prominent
+          ? 'bg-[var(--color-text-primary)] text-[var(--color-text-inverse)] shadow-sm'
+          : 'bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
+        : 'text-[var(--color-ink-2)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-2)]'
+    }`;
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
@@ -72,7 +89,7 @@ export default function Layout() {
       >
         <Link
           to="/"
-          className="text-lg font-medium tracking-tight"
+          className="text-lg font-semibold tracking-tight"
           style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
         >
           MeOS
@@ -114,7 +131,7 @@ export default function Layout() {
         >
           <Link
             to="/"
-            className="text-lg font-medium tracking-tight"
+            className="text-lg font-semibold tracking-tight"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
             onClick={() => setSidebarOpen(false)}
           >
@@ -131,38 +148,6 @@ export default function Layout() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
-          <Link
-            to="/"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all mb-2 ${
-              location.pathname === '/' || location.pathname === '/today'
-                ? 'text-white'
-                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
-            }`}
-            style={location.pathname === '/' || location.pathname === '/today' ? { backgroundColor: 'var(--color-text-primary)' } : {}}
-            onClick={() => setSidebarOpen(false)}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            <span>今日</span>
-          </Link>
-
-          <Link
-            to="/workbench"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              location.pathname === '/workbench'
-                ? 'text-white'
-                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
-            }`}
-            style={location.pathname === '/workbench' ? { backgroundColor: 'var(--color-text-primary)' } : {}}
-            onClick={() => setSidebarOpen(false)}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4h6v6H4V4zm10 0h6v3h-6V4zm0 6h6v10h-6V10zM4 14h6v6H4v-6z" />
-            </svg>
-            <span>工作台</span>
-          </Link>
-
           <div className="space-y-1">
             {navItems.map((item) => {
               const active = isActive(item.path);
@@ -170,12 +155,7 @@ export default function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    active
-                      ? 'text-[var(--color-text-primary)]'
-                      : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]'
-                  }`}
-                  style={active ? { backgroundColor: 'var(--color-bg-secondary)' } : {}}
+                  className={navLink(active, item.prominent)}
                   onClick={() => setSidebarOpen(false)}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,7 +176,7 @@ export default function Layout() {
           <div className="flex items-center gap-3">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium text-white"
-              style={{ backgroundColor: 'var(--color-text-primary)' }}
+              style={{ backgroundColor: 'var(--color-ink-soft)' }}
             >
               {user?.name?.charAt(0) || 'U'}
             </div>
@@ -212,6 +192,17 @@ export default function Layout() {
               </p>
             </div>
             <button
+              onClick={() => {
+                const next: Theme = theme === 'dark' ? 'light' : 'dark';
+                applyTheme(next);
+                setTheme(next);
+              }}
+              className="p-1.5 rounded hover:bg-slate-100 transition-colors"
+              title={theme === 'dark' ? '切换到白色模式' : '切换到深夜模式'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-slate-400" /> : <Moon className="w-4 h-4 text-slate-400" />}
+            </button>
+            <button
               onClick={handleLogout}
               className="p-1.5 rounded hover:bg-slate-100 transition-colors"
               title="退出登录"
@@ -223,8 +214,8 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-56">
-        <div className="max-w-5xl mx-auto px-4 md:px-8 py-10 pt-16 md:pt-10">
+      <main className="flex-1 min-w-0">
+        <div className="max-w-6xl mx-auto px-4 md:px-10 py-8 md:py-12 pt-16 md:pt-10">
           <Outlet />
         </div>
       </main>

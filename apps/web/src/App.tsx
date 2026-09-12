@@ -3,8 +3,10 @@ import { lazy, Suspense } from 'react';
 import Layout from './components/Layout';
 import { useAuthStore } from './stores/authStore';
 
-const Today = lazy(() => import('./pages/Today'));
 const Workbench = lazy(() => import('./pages/Workbench'));
+const Landing = lazy(() => import('./pages/Landing'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
 const DirectionHub = lazy(() => import('./pages/DirectionHub'));
 const ActionHub = lazy(() => import('./pages/ActionHub'));
 const CognitionHub = lazy(() => import('./pages/CognitionHub'));
@@ -35,7 +37,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function NotFound() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="bg-white rounded-xl border border-slate-100 p-12 text-center">
+      <div className="bg-[var(--color-surface)] rounded-xl border border-slate-100 p-12 text-center">
         <h1 className="text-4xl font-light text-slate-900 mb-2">404</h1>
         <p className="text-sm text-slate-400">页面不存在</p>
       </div>
@@ -47,38 +49,39 @@ function App() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Today />} />
-          <Route path="today" element={<Navigate to="/" replace />} />
-          <Route path="workbench" element={<Workbench />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route path="/workbench" element={<Workbench />} />
 
           {/* Direction */}
-          <Route path="direction" element={<DirectionHub />} />
-          <Route path="direction/*" element={<Navigate to="/direction" replace />} />
+          <Route path="/direction" element={<DirectionHub />} />
+          <Route path="/direction/*" element={<Navigate to="/direction" replace />} />
 
           {/* Action */}
-          <Route path="action" element={<ActionHub />} />
-          <Route path="action/*" element={<Navigate to="/action" replace />} />
+          <Route path="/action" element={<ActionHub />} />
+          <Route path="/action/*" element={<Navigate to="/action" replace />} />
 
           {/* Cognition */}
-          <Route path="cognition" element={<CognitionHub />} />
-          <Route path="cognition/*" element={<Navigate to="/cognition" replace />} />
+          <Route path="/cognition" element={<CognitionHub />} />
+          <Route path="/cognition/*" element={<Navigate to="/cognition" replace />} />
 
           {/* Reflection */}
-          <Route path="reflection" element={<ReflectionHub />} />
-          <Route path="reflection/*" element={<Navigate to="/reflection" replace />} />
+          <Route path="/reflection" element={<ReflectionHub />} />
+          <Route path="/reflection/*" element={<Navigate to="/reflection" replace />} />
 
           {/* Resources */}
-          <Route path="resources" element={<ResourcesHub />} />
-          <Route path="resources/*" element={<Navigate to="/resources" replace />} />
+          <Route path="/resources" element={<ResourcesHub />} />
+          <Route path="/resources/*" element={<Navigate to="/resources" replace />} />
 
           {/* MeLog */}
-          <Route path="melog" element={<MeLogHub />} />
-          <Route path="melog/*" element={<Navigate to="/melog" replace />} />
+          <Route path="/melog" element={<MeLogHub />} />
+          <Route path="/melog/*" element={<Navigate to="/melog" replace />} />
 
           {/* Brand */}
-          <Route path="brand" element={<BrandHub />} />
-          <Route path="brand/*" element={<Navigate to="/brand" replace />} />
+          <Route path="/brand" element={<BrandHub />} />
+          <Route path="/brand/*" element={<Navigate to="/brand" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Route>

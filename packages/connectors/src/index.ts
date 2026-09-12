@@ -1,4 +1,10 @@
 export * from './lib/ingest.js';
 export * from './lib/state.js';
+export * from './lib/brand-client.js';
 export * from './connectors/apple-health.js';
 export * from './connectors/chatlog.js';
+export * from './connectors/dida365.js';
+export * as bilibili from './connectors/bilibili.js';
+export * as youtube from './connectors/youtube.js';
+export * as github from './connectors/github.js';
+export * as import_ from './connectors/import.js';

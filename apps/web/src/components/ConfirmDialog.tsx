@@ -42,7 +42,7 @@ export default function ConfirmDialog({
           className={`px-5 py-2.5 text-sm font-medium rounded-lg disabled:opacity-50 ${
             variant === 'danger'
               ? 'bg-red-600 hover:bg-red-700 text-white'
-              : 'bg-slate-900 hover:bg-slate-800 text-white'
+              : 'bg-[var(--color-ink-soft)] hover:bg-[var(--color-ink-soft-hover)] text-white'
           }`}
         >
           {loading ? '处理中...' : confirmLabel}
