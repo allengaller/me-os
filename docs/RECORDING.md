@@ -60,3 +60,15 @@
 - ✅ **2026-09-12** — 反思自动带入当日数据（`GET /reflections/today-summary` 聚合待办/习惯/健康，每日反思无草稿时自动预填「自由记录」）；Chrome 扩展直写 API（popup 输入待办直调 `/api/todos`，token 经 content script 读页面 localStorage）；口述打卡词表通用化（`待办：` / `笔记：` 前缀路由）
 - ✅ **2026-09-12** — 品牌连接器（并行会话产出）：`dida365`（滴答清单习惯/任务）、`brand-bilibili`、`brand-youtube`、`brand-github` 全部接线 CLI（含 brand-import），42 个测试全绿；实测 brand-github `allengaller/me-os` dry-run 成功（stars 0 / forks 0 / issues 0，首轮记基线）
 - ⬜ 待办 — MCP 工具集扩展（todo/habit/reflection 读写）、apple-health 正念分钟、认知快捷录入
+
+## 连接器账号配置（2026-09-12）
+
+| 连接器 | 账号 | 凭据 | 获取方式 | 状态 |
+| --- | --- | --- | --- | --- |
+| brand-github | allengaller | 无需（公开 REST API；PAT 可提升 60→5000 次/时） | — | ✅ 实测通过：`allengaller/me-os` dry-run（stars 0 / forks 0 / issues 0，首轮记基线） |
+| brand-bilibili | allengaller | 无需（Web 公开接口，Wbi 签名） | 需要 mid：打开个人空间，取 `space.bilibili.com/{mid}` 的数字 | ⏸ 等 mid |
+| dida365 | — | 浏览器 Cookie `t`（`DIDA365_TOKEN`） | 登录 https://dida365.com → F12 → Application → Cookies → `api.dida365.com` → 复制 `t` | ⏸ 等 token |
+| brand-youtube | allengaller（Google） | YouTube Data API v3 key + 频道 ID（UC 开头） | Google Cloud Console → 建项目 → 启用「YouTube Data API v3」→ 凭据 → API key；频道 ID 可从 `youtube.com/@allengaller` 解析 | ⏸ 等 key |
+
+**下一步**：三项凭据到齐后逐个真实 dry-run（`melog-connector brand-xxx --dry-run`），确认无误再正式写品牌快照。
+密钥只在本机使用：`DIDA365_TOKEN` / `YOUTUBE_API_KEY` 建议放 shell 环境变量，不落日志不进仓库。

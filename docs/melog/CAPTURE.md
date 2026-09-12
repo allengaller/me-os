@@ -12,8 +12,11 @@
    正念分钟** `HKCategoryTypeIdentifierMindfulSession`，潮汐冥想数据走不到，需要时补约 20 行）；
 2. **手动文字录入（本功能）**：口述 + 听写 + 规则解析，零配置、离线可用，当天可用。
 
-Keep 若要距离/配速/GPX 深度数据，可参考 [running_page](https://github.com/yihong0618/running_page)
-的非官方 API 实现，后续可在 `packages/connectors` 加 `keep` 连接器。
+Keep 深度数据（距离/配速/GPX）的自动化通道已于 2026-09-12 实测判定**不可行**：
+旧社区接口（v1/v1.2/keepapi）全部 404「请升级到最新版本」；新 Web 端「运动档案」
+(`sportpc-webapp/query/*`) 全链路加密（`enif` 加密查询参数 + `dataInfo` 加密响应）+ WAF 风控；
+社区头部项目 [running_page](https://github.com/yihong0618/running_page) 已移除 Keep 数据源。
+详见 [WEARABLES_RESEARCH.md](./WEARABLES_RESEARCH.md) §3。Keep 数据接入一律走本功能。
 
 ## 使用流程
 
@@ -80,6 +83,29 @@ curl -X POST http://localhost:3001/api/melog/capture/parse \
   睡眠→`sleep`、体重→`weight`；note 内嵌 `melog:<externalId>` 标记，已存在则跳过，
   防止重复提交产生重复记录。
 
+## CLI 通道（melog-connector speak）
+
+Web 口述卡片之外，`packages/connectors` 提供等价 CLI 快录入口，适合终端党与脚本化场景
+（实现：`connectors/speak.ts`，仅正则解析、不接 LLM）：
+
+```bash
+node packages/connectors/dist/cli.js speak \
+  --text "今天 8500 步，跑步 5 公里，睡眠 6 小时 40 分钟"
+# 补记 / 预览
+node packages/connectors/dist/cli.js speak --text "体重 62 公斤" --date 2026-09-11
+node packages/connectors/dist/cli.js speak --dry-run --text "..."
+```
+
+| 维度 | Web 口述卡片（/api/melog/capture） | CLI speak |
+| --- | --- | --- |
+| 入口 | 浏览器，解析预览 + 勾选 | 终端一条命令 |
+| 指标 | 冥想/跑步配速/睡眠/体重/步数/通用运动 | 步数/距离/时长/体重/热量/心率/次数（通用数字+单位） |
+| 语义 | 时段词（昨晚/早上）、前缀路由（待办/笔记） | 无（纯正则） |
+| 双写 | 时间线 + 健康记录（HealthRecord） | 仅 MeLog 时间线 |
+| 幂等 | `capture-<日期>-<类型>-<片段哈希8>` | `speak-<日期>-<key>`（同 key 重复加序号；识别不出存原文 note） |
+
+> 提示：需要健康记录/待办/笔记语义时用 Web 卡片；只记每日数字（步数、睡眠、体重、热量）CLI 更快。
+
 ## 测试与验证
 
 - 单测：`capture.test.ts` 11 个（各模式 / 时间词 / 多段 / 降级 / externalId 稳定性）；
@@ -97,6 +123,7 @@ curl -X POST http://localhost:3001/api/melog/capture/parse \
 ## 后续可扩展
 
 - `apple-health` 连接器补 `HKCategoryTypeIdentifierMindfulSession`（正念分钟）解析；
-- Keep 非官方 API 连接器（距离 / 配速 / GPX，参考 running_page，仅本地使用）；
+- ~~Keep 非官方 API 连接器~~（2026-09-12 实测已不可行，见背景节）；
 - 词表扩展：喝水、情绪等更多健康类型；中文数字（「二十分钟」）目前不支持；
+- CLI speak 与 Web capture 的解析器后续可合并为共享规则（capture 语义更强，可考虑让 speak 复用配速/前缀解析）；
 - 可选 LLM 解析：MeLog 已有 LLM 运行器配置，识别不了的说法可走模型兜底。
