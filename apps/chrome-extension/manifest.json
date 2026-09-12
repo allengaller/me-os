@@ -1,9 +1,12 @@
 {
   "manifest_version": 3,
   "name": "MeOS - 人生管理系统",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "人生管理系统 Chrome 扩展 - 快速访问和效率工具",
-  "permissions": ["storage", "activeTab"],
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
   "host_permissions": [
     "http://localhost:3000/*",
     "http://localhost:3001/*",
@@ -12,8 +15,17 @@
   ],
   "content_scripts": [
     {
-      "matches": ["http://localhost:3000/*", "http://localhost:5173/*", "https://meos.app/*"],
-      "js": ["content.js"],
+      "matches": [
+        "http://localhost:3000/*",
+        "http://localhost:5173/*",
+        "https://meos.app/*",
+        "https://mp.weixin.qq.com/*",
+        "https://channels.weixin.qq.com/*",
+        "https://creator.xiaohongshu.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -37,8 +49,13 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["assets/*", "index.html"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "assets/*",
+        "index.html"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ]
 }

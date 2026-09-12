@@ -114,7 +114,17 @@ JSON schema：
 
 可以把这个流程挂进 cron：每周跑一次 `brand-import --file ~/snapshots/wechat-2026-W37.json`（文件名随你）。
 
-## 6. 故障排查
+## 6. Chrome 扩展读创作者后台（实验性）
+
+`apps/chrome-extension` 自 v0.2.0 起内置「品牌快照」区块（已内置在 popup 中）：
+
+1. 打开浏览器扩展管理页，加载已解压的 `apps/chrome-extension/`（开发者模式）
+2. 登录公众号（mp.weixin.qq.com）/ 视频号（channels.weixin.qq.com）/ 小红书创作中心（creator.xiaohongshu.com）后台
+3. 点扩展图标 → 「品牌快照」→ 「从当前页提取」→ 核对数值 → 「同步到 MeOS 快照」
+
+实现是**启发式正则抽取**（页面可见文本匹配「粉丝/阅读/点赞/评论/分享」），DOM 结构由各平台后台掌握且经常改版，**需要在你的登录态下实测校准**；提取结果可手动修正，也可完全不依赖提取、直接手填数值。同步写入 `/api/brand/snapshots`（开发模式免鉴权；生产模式需先在 MeOS 页面登录以获得 token）。
+
+## 7. 故障排查
 
 | 症状 | 排查 |
 |---|---|
