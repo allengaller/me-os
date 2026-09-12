@@ -90,6 +90,34 @@ async function openExportStream(exportPath: string): Promise<NodeJS.ReadableStre
   return extractor.stdout;
 }
 
+// ==================== brand-* 快照命令的公共渲染 ====================
+
+function makeBrandClient(flags: Record<string, string>): BrandApiClient {
+  return new BrandApiClient({
+    apiUrl: flags['meos-url'] || 'http://localhost:3001',
+    token: flags.token || process.env.MEOS_API_TOKEN,
+  });
+}
+
+const fmtIncrement = (n: number | null) => (n === null ? '—' : String(n));
+const baselineSuffix = (baseline: boolean) => (baseline ? '（首次基线）' : '');
+
+/** 品牌快照命令统一输出：header + 摘要行 + dry-run/写入结果行 */
+function printBrandOutcome(opts: {
+  header: string;
+  summary: string[];
+  channelId: string | null;
+  dryRun: boolean;
+}): void {
+  console.log(
+    [
+      opts.header,
+      ...opts.summary,
+      opts.dryRun ? '--dry-run：未写入快照' : `✅ 快照已写入 MeOS（渠道 ${opts.channelId}）`,
+    ].join('\n'),
+  );
+}
+
 async function main(): Promise<number> {
   const { command, flags } = parseArgs(process.argv.slice(2));
 
@@ -269,136 +297,108 @@ async function main(): Promise<number> {
       console.error('缺少 --mid <mid>（B站用户 ID，见 space.bilibili.com/{mid}）');
       return 1;
     }
-    const brandClient = new BrandApiClient({
-      apiUrl: flags['meos-url'] || 'http://localhost:3001',
-      token: flags.token || process.env.MEOS_API_TOKEN,
-    });
-    const stateName = `brand-bilibili-${mid}`;
-    console.log('📥 拉取 B站公开数据（粉丝数 + 投稿统计）…');
+    const client = makeBrandClient(flags);
     const result = await runBilibiliConnector({
       mid,
-      client: brandClient,
+      client,
       explicitChannelId: flags['channel-id'] || undefined,
       maxVideos: Number(flags['max-videos'] || 100),
       cookie: flags.cookie || process.env.BILIBILI_COOKIE,
       dryRun: flags['dry-run'] === 'true',
       stateDir,
-      stateName,
+      stateName: `brand-bilibili-${mid}`,
       loadState,
       saveState,
     });
-
-    const baseline = result.baseline ? '（首次运行，仅记基线）' : '';
-    const fmt = (n: number | null) => (n === null ? '—' : String(n));
     const totals = result.totals ?? { views: 0, likes: 0, comments: 0, shares: 0 };
-    console.log(
-      [
+    printBrandOutcome({
+      header: '📥 拉取 B站公开数据（粉丝数 + 投稿统计）…',
+      summary: [
         `账号：${result.author ?? mid} · 粉丝 ${result.follower} · 投稿 ${result.videoCount} 个`,
         `累计：播放 ${totals.views} · 点赞 ${totals.likes} · 评论 ${totals.comments} · 分享 ${totals.shares}`,
-        `本周期增量：播放 ${fmt(result.increments.views)} · 点赞 ${fmt(result.increments.likes)} · 评论 ${fmt(result.increments.comments)} · 分享 ${fmt(result.increments.shares)} ${baseline}`,
-        flags['dry-run'] === 'true'
-          ? '--dry-run：未写入快照'
-          : `✅ 快照已写入 MeOS（渠道 ${result.channelId}）`,
-      ].join('\n'),
-    );
+        `本周期增量：播放 ${fmtIncrement(result.increments.views)} · 点赞 ${fmtIncrement(result.increments.likes)} · 评论 ${fmtIncrement(result.increments.comments)} · 分享 ${fmtIncrement(result.increments.shares)} ${baselineSuffix(result.baseline)}`,
+      ],
+      channelId: result.channelId,
+      dryRun: flags['dry-run'] === 'true',
+    });
     return 0;
   }
 
-  if (command === 'brand-youtube') {
+if (command === 'brand-youtube') {
     const ytChannel = flags['channel-id'];
     if (!ytChannel) {
       console.error('缺少 --channel-id <UCxxx>（YouTube 频道 ID）');
       return 1;
     }
-    const brandClient = new BrandApiClient({
-      apiUrl: flags['meos-url'] || 'http://localhost:3001',
-      token: flags.token || process.env.MEOS_API_TOKEN,
-    });
-    const stateName = `brand-youtube-${ytChannel}`;
-    console.log('📥 拉取 YouTube Data API v3 数据…');
+    const client = makeBrandClient(flags);
     const result = await runYouTubeConnector({
       channelId: ytChannel,
       apiKey: flags['api-key'] || process.env.YOUTUBE_API_KEY,
-      client: brandClient,
+      client,
       explicitChannelId: flags['target-channel-id'],
       maxVideos: Number(flags['max-videos'] || 50),
       dryRun: flags['dry-run'] === 'true',
       stateDir,
-      stateName,
+      stateName: `brand-youtube-${ytChannel}`,
       loadState,
       saveState,
     });
-
-    const baseline = result.baseline ? '（首次运行，仅记基线）' : '';
-    const fmt = (n: number | null) => (n === null ? '—' : String(n));
     const totals = result.totals ?? { views: 0, likes: 0, comments: 0, shares: 0 };
-    console.log(
-      [
+    printBrandOutcome({
+      header: '📥 拉取 YouTube Data API v3 数据…',
+      summary: [
         `频道：${result.author ?? ytChannel} · 订阅 ${result.follower} · 视频 ${result.videoCount} 个`,
         `累计：观看 ${totals.views} · 点赞 ${totals.likes} · 评论 ${totals.comments} · 分享 ${totals.shares ?? '—'}`,
-        `本周期增量：观看 ${fmt(result.increments.views)} · 点赞 ${fmt(result.increments.likes)} · 评论 ${fmt(result.increments.comments)} · 分享 — ${baseline}`,
-        flags['dry-run'] === 'true'
-          ? '--dry-run：未写入快照'
-          : `✅ 快照已写入 MeOS（渠道 ${result.channelId}）`,
-      ].join('\n'),
-    );
+        `本周期增量：观看 ${fmtIncrement(result.increments.views)} · 点赞 ${fmtIncrement(result.increments.likes)} · 评论 ${fmtIncrement(result.increments.comments)} · 分享 — ${baselineSuffix(result.baseline)}`,
+      ],
+      channelId: result.channelId,
+      dryRun: flags['dry-run'] === 'true',
+    });
     return 0;
   }
 
-  if (command === 'brand-github') {
+if (command === 'brand-github') {
     const repo = flags.repo;
     if (!repo) {
       console.error('缺少 --repo <owner/name>');
       return 1;
     }
-    const brandClient = new BrandApiClient({
-      apiUrl: flags['meos-url'] || 'http://localhost:3001',
-      token: flags.token || process.env.MEOS_API_TOKEN,
-    });
-    const stateName = `brand-github-${repo.replace(/[^A-Za-z0-9]/g, '_')}`;
-    console.log('📥 拉取 GitHub 仓库指标…');
+    const client = makeBrandClient(flags);
     const result = await runGitHubConnector({
       repo,
       token: flags.token || process.env.GITHUB_TOKEN,
-      client: brandClient,
+      client,
       explicitChannelId: flags['target-channel-id'],
       dryRun: flags['dry-run'] === 'true',
       stateDir,
-      stateName,
+      stateName: `brand-github-${repo.replace(/[^A-Za-z0-9]/g, '_')}`,
       loadState,
       saveState,
     });
-
-    const baseline = result.baseline ? '（首次运行，仅记基线）' : '';
-    const fmt = (n: number | null) => (n === null ? '—' : String(n));
     const totals = result.totals ?? { views: null, likes: 0, comments: 0, shares: null };
-    console.log(
-      [
+    printBrandOutcome({
+      header: '📥 拉取 GitHub 仓库指标…',
+      summary: [
         `仓库：${result.fullName} · stars ${result.follower}`,
         `累计：forks ${totals.likes} · open issues ${totals.comments} · views/shares ${totals.views ?? '—'}`,
-        `本周期增量：forks ${fmt(result.increments.likes)} · issues ${fmt(result.increments.comments)} · views ${totals.views ?? '—'} · shares ${totals.shares ?? '—'} ${baseline}`,
-        flags['dry-run'] === 'true'
-          ? '--dry-run：未写入快照'
-          : `✅ 快照已写入 MeOS（渠道 ${result.channelId}）`,
-      ].join('\n'),
-    );
+        `本周期增量：forks ${fmtIncrement(result.increments.likes)} · issues ${fmtIncrement(result.increments.comments)} · views ${totals.views ?? '—'} · shares ${totals.shares ?? '—'} ${baselineSuffix(result.baseline)}`,
+      ],
+      channelId: result.channelId,
+      dryRun: flags['dry-run'] === 'true',
+    });
     return 0;
   }
 
-  if (command === 'brand-import') {
+if (command === 'brand-import') {
     const filePath = flags.file;
     if (!filePath) {
       console.error('缺少 --file <path.json>（按统一 schema 组织数据，见 docs/brand/SNAPSHOTS.md）');
       return 1;
     }
-    const brandClient = new BrandApiClient({
-      apiUrl: flags['meos-url'] || 'http://localhost:3001',
-      token: flags.token || process.env.MEOS_API_TOKEN,
-    });
-    console.log(`📥 从 ${filePath} 读取品牌快照…`);
+    const client = makeBrandClient(flags);
     const result = await runImportConnector({
       filePath,
-      client: brandClient,
+      client,
       explicitChannelId: flags['target-channel-id'],
       dryRun: flags['dry-run'] === 'true',
       stateDir,
@@ -406,21 +406,18 @@ async function main(): Promise<number> {
       loadState,
       saveState,
     });
-
-    const baseline = result.baseline ? '（首次基线）' : '';
-    const fmt = (n: number | null) => (n === null ? '—' : String(n));
     const totals = result.totals ?? { views: 0, likes: 0, comments: 0, shares: 0 };
-    console.log(
-      [
+    printBrandOutcome({
+      header: `📥 从 ${filePath} 读取品牌快照…`,
+      summary: [
         `渠道：${result.platform}/${result.handle}`,
         `粉丝：${result.follower}`,
         `累计：观看 ${totals.views} · 点赞 ${totals.likes} · 评论 ${totals.comments} · 分享 ${totals.shares}`,
-        `本周期增量：观看 ${fmt(result.increments.views)} · 点赞 ${fmt(result.increments.likes)} · 评论 ${fmt(result.increments.comments)} · 分享 ${fmt(result.increments.shares)} ${baseline}`,
-        flags['dry-run'] === 'true'
-          ? '--dry-run：未写入快照'
-          : `✅ 快照已写入 MeOS（渠道 ${result.channelId}）`,
-      ].join('\n'),
-    );
+        `本周期增量：观看 ${fmtIncrement(result.increments.views)} · 点赞 ${fmtIncrement(result.increments.likes)} · 评论 ${fmtIncrement(result.increments.comments)} · 分享 ${fmtIncrement(result.increments.shares)} ${baselineSuffix(result.baseline)}`,
+      ],
+      channelId: result.channelId,
+      dryRun: flags['dry-run'] === 'true',
+    });
     return 0;
   }
 
