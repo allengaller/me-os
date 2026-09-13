@@ -45,3 +45,11 @@ coverage/
 # Obsidian（在仓库根打开 vault 时生成的本机编辑器状态，非项目内容）
 .obsidian/
 /me-os/
+
+# Agent 工具状态（会话 journal、运行事件账本、权限缓存，非项目内容）
+.mimosa/
+.qoder/
+.hallmark/
+.v2c/
+.video_agent/
+.zcode/
