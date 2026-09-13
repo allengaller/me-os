@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -51,9 +52,11 @@ describe('Login Page', () => {
     vi.mocked(api.post).mockRejectedValueOnce(axiosError);
 
     renderLogin();
-    fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'bad@example.com' } });
-    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'wrong' } });
-    fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'bad@example.com' } });
+      fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'wrong' } });
+      fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    });
 
     await waitFor(() => {
       expect(screen.getByText('邮箱或密码错误')).toBeInTheDocument();
@@ -66,9 +69,11 @@ describe('Login Page', () => {
     });
 
     renderLogin();
-    fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'ok@example.com' } });
-    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret' } });
-    fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'ok@example.com' } });
+      fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret' } });
+      fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    });
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/auth/login', {
@@ -84,9 +89,11 @@ describe('Login Page', () => {
     vi.mocked(api.post).mockReturnValueOnce(new Promise((res) => { resolvePost = res; }));
 
     renderLogin();
-    fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'x@example.com' } });
-    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret' } });
-    fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('邮箱'), { target: { value: 'x@example.com' } });
+      fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret' } });
+      fireEvent.click(screen.getByRole('button', { name: '登录' }));
+    });
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '登录中...' })).toBeDisabled();
