@@ -124,8 +124,7 @@ async function handleError(fastify: FastifyInstance, error: unknown, reply: Fast
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
     return reply.code(400).send({ error: '记录已存在' });
   }
-  fastify.log.error(error);
-  return reply.code(500).send({ error: 'Server error' });
+  throw error;
 }
 
 async function ensureProfile(userId: string) {
