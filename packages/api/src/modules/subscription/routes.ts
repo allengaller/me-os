@@ -67,8 +67,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -94,8 +93,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
       return createPaginatedResponse(subscriptions, total, { page, pageSize, limit, offset });
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -197,8 +195,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
         },
       };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -230,8 +227,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
       return { subscription, currentUsage };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -256,8 +252,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -274,8 +269,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       await prisma.subscription.delete({ where: { id } });
       return { success: true };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -296,8 +290,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -318,8 +311,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -336,8 +328,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       await prisma.quotaDefinition.delete({ where: { id: quotaId } });
       return { success: true };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -380,8 +371,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -402,8 +392,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
       return { monthlyUsage };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -431,8 +420,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
       return { usageRecords, total };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -466,8 +454,7 @@ export const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
       return { subscriptionId: id, year: now.getFullYear(), month: now.getMonth() + 1, utilization, overallUtilization };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 };

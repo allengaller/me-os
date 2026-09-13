@@ -182,8 +182,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(201).send({ source });
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -198,8 +197,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return { source };
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -248,8 +246,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return { entries, total };
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -280,8 +277,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(201).send({ entry });
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -305,8 +301,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(404).send({ error: error.message });
       }
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -319,8 +314,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return { items: parseCaptureText(text) };
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -336,8 +330,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(201).send({ ...result, items });
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -366,8 +359,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return reply.code(201).send({ skill });
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -382,8 +374,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return { skill };
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -432,8 +423,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
         return reply.code(400).send({ error: error.message });
       }
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });
@@ -481,8 +471,7 @@ export const melogRoutes: FastifyPluginAsync = async (fastify) => {
       return { schedule };
     } catch (error) {
       return handleZodError(error, reply, () => {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       });
     }
   });

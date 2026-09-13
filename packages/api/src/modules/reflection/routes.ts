@@ -91,8 +91,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: '请求参数错误', details: error.errors });
         }
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });
@@ -149,8 +148,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: '请求参数错误', details: error.errors });
         }
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });
@@ -181,8 +179,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
 
         return { reflections, pagination: { page: Number(page), limit: Number(limit), total, totalPages: Math.ceil(total / Number(limit)) } };
       } catch (error) {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });
@@ -206,8 +203,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
 
         return { reflection };
       } catch (error) {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });
@@ -242,8 +238,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
         if (error instanceof z.ZodError) {
           return reply.code(400).send({ error: '请求参数错误', details: error.errors });
         }
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });
@@ -266,8 +261,7 @@ export const reflectionRoutes: FastifyPluginAsync = async (fastify) => {
 
         return { success: true };
       } catch (error) {
-        fastify.log.error(error);
-        return reply.code(500).send({ error: '服务器错误' });
+        throw error;
       }
     },
   });

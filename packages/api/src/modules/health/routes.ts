@@ -70,8 +70,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 
@@ -103,8 +102,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 
@@ -122,8 +120,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 
@@ -141,8 +138,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       }
       return { success: true };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 
@@ -164,8 +160,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
 
       return { record };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 
@@ -193,8 +188,7 @@ export const healthRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: 'Invalid parameters', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Server error' });
+      throw error;
     }
   });
 };

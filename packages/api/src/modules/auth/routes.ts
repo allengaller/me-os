@@ -27,8 +27,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof Error && error.message === '邮箱已被注册') {
         return reply.code(400).send({ error: error.message });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -46,8 +45,7 @@ export const authRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof Error && error.message === '邮箱或密码错误') {
         return reply.code(401).send({ error: error.message });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 

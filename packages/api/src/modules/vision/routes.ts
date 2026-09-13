@@ -22,8 +22,7 @@ export const visionRoutes: FastifyPluginAsync = async (fastify) => {
       });
       return { vision };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -58,8 +57,7 @@ export const visionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -96,8 +94,7 @@ export const visionRoutes: FastifyPluginAsync = async (fastify) => {
       if (error instanceof z.ZodError) {
         return reply.code(400).send({ error: '请求参数错误', details: error.errors });
       }
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 
@@ -112,8 +109,7 @@ export const visionRoutes: FastifyPluginAsync = async (fastify) => {
       });
       return { visions };
     } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: '服务器错误' });
+      throw error;
     }
   });
 };
