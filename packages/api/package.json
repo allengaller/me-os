@@ -15,7 +15,7 @@
     "db:seed": "tsx src/prisma/seed.ts",
     "db:seed:brand": "tsx src/prisma/seed-brand.ts",
     "lint": "eslint src --ext .ts --report-unused-disable-directives --max-warnings 200",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@fastify/cors": "^8.5.0",

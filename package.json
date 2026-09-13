@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "description": "人生管理系统 - 基于反思与梳理的多方法论生活管理平台",
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
   "scripts": {
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
