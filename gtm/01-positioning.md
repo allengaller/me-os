@@ -1,7 +1,7 @@
 # 01 — 定位与信息传递（Positioning & Messaging）
 
 > 方法：April Dunford 定位五要素 + 信息屋。本文回答「MeOS 是谁、不是谁、对谁说什么」。
-> 注意区分：本文定位的是**产品 MeOS**；创始人个人品牌的定位见 [docs/brand/DESIGN.md](../docs/brand/DESIGN.md)，两者互相放大但不是一回事。
+> 注意区分：本文定位的是**产品 MeOS**；创始人个人品牌的定位见 [docs/实践/品牌/蓝本.md](../docs/实践/品牌/蓝本.md)，两者互相放大但不是一回事。
 
 ---
 

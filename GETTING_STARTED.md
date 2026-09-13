@@ -74,7 +74,7 @@ pnpm --filter @meos/api db:studio            # Prisma Studio 查看数据
 | **品牌**（`/brand`） | 填写品牌档案 → 建内容支柱 → 在内容流水线排一期选题 |
 | **Workbench**（`/workbench`） | 个人工作台：进行中项目、打卡与学习专题一屏聚合 |
 
-方法论层面（每个板块为什么这样设计、怎么用出效果）见 [docs/GETTING_STARTED.md](./docs/GETTING_STARTED.md) 与 [docs/OVERVIEW.md](./docs/OVERVIEW.md)。
+方法论层面（每个板块为什么这样设计、怎么用出效果）见 [docs/理论/方法论/入门.md](./docs/理论/方法论/入门.md) 与 [docs/理论/方法论/总览.md](./docs/理论/方法论/总览.md)。
 
 ## 7. Chrome 扩展
 

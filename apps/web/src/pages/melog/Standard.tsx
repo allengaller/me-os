@@ -2,7 +2,7 @@ import { FileBadge, Inbox, Wrench, PackageOpen } from 'lucide-react';
 
 /**
  * MeLog Standard v0.1 摘要页。
- * 完整规范见仓库 docs/melog/STANDARD.md。
+ * 完整规范见仓库 docs/实践/记录/标准.md。
  */
 
 const SECTIONS = [
@@ -72,7 +72,7 @@ export default function Standard() {
         <p className="text-xs leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
           一个开放的、社区共建的个人生活数据格式：把健康、笔记、IM 聊天记录等数据孤岛，
           用统一信封汇入本地时间线，通过 MCP 与 Skills 让 AI 和工具读写。
-          标准先行，实现随后 —— 完整规范见仓库 docs/melog/STANDARD.md。
+          标准先行，实现随后 —— 完整规范见仓库 docs/实践/记录/标准.md。
         </p>
       </div>
 

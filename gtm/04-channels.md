@@ -28,7 +28,7 @@
 ```
 - 节奏：每周 1 条主内容 + 2–3 条轻量动态（即刻/小红书）
 - 素材库：git 历史、DESIGN.md 架构图、MeLog 技能报告截图、翻车与修复
-- 已有资产：品牌板块的 [OPERATIONS.md](../docs/brand/OPERATIONS.md)（生产 SOP）与 [COPY.md](../docs/brand/COPY.md)（话术模板）直接复用
+- 已有资产：品牌板块的 [OPERATIONS.md](../docs/实践/品牌/运营.md)（生产 SOP）与 [COPY.md](../docs/实践/品牌/文案.md)（话术模板）直接复用
 
 ### Loop 2 · 分享物裂变（P2 上线）
 - 平衡轮雷达图海报（带 MeOS 水印与链接）—— 用户晒人生状态即传播

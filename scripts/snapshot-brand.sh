@@ -3,7 +3,7 @@
 # 在 cron 中调用：pnpm 数据库本地可达时拉取 B站 / YouTube / GitHub 指标写入 MeOS 品牌快照。
 #
 # 用法：scripts/snapshot-brand.sh
-# 配置：在 ~/.config/meos/snapshots.env 写入要启用的连接器（见 docs/brand/SNAPSHOTS.md）
+# 配置：在 ~/.config/meos/snapshots.env 写入要启用的连接器（见 docs/实践/品牌/快照调度.md）
 # 日志：默认 ~/.melog/connectors/cron.log；可设置 SNAPSHOT_LOG 覆盖
 #
 # 设计：单个连接器失败不影响其他连接器；脚本始终 exit 0，避免 cron 邮件轰炸；

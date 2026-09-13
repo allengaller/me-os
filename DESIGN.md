@@ -382,12 +382,12 @@ Dashboard 应一屏纵览全局：
 - Dashboard 重构为五维交汇视图
 - 统计页面（趋势、完成率、连续天数等）
 
-> ✅ Phase 0–6 已全部落地。导航经两轮重构演进为「Today + Workbench + 7 Hub」结构（见 docs/NAVIGATION_REFACTOR*.md）。
+> ✅ Phase 0–6 已全部落地。导航经两轮重构演进为「Today + Workbench + 7 Hub」结构（见 docs/档案/导航重构*.md）。
 
 ## 八、扩展板块设计
 
-> MeLog 的完整产品文档见 [docs/MELOG.md](./docs/MELOG.md)，开放格式规范见 [docs/melog/STANDARD.md](./docs/melog/STANDARD.md)；
-> 品牌板块总览见 [docs/BRAND.md](./docs/BRAND.md)，实现设计（API/前端交互）见 [docs/superpowers/specs/2026-09-11-brand-console-design.md](./docs/superpowers/specs/2026-09-11-brand-console-design.md)。
+> MeLog 的完整产品文档见 [docs/实践/记录/总览.md](./docs/实践/记录/总览.md)，开放格式规范见 [docs/实践/记录/标准.md](./docs/实践/记录/标准.md)；
+> 品牌板块总览见 [docs/实践/品牌/总览.md](./docs/实践/品牌/总览.md)，实现设计（API/前端交互）见 [docs/档案/工程/设计/2026-09-11品牌控制台设计.md](./docs/档案/工程/设计/2026-09-11品牌控制台设计.md)。
 
 ### 8.1 工作流（方向维度）
 

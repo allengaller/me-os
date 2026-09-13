@@ -392,7 +392,7 @@ if (command === 'brand-github') {
 if (command === 'brand-import') {
     const filePath = flags.file;
     if (!filePath) {
-      console.error('缺少 --file <path.json>（按统一 schema 组织数据，见 docs/brand/SNAPSHOTS.md）');
+      console.error('缺少 --file <path.json>（按统一 schema 组织数据，见 docs/实践/品牌/快照调度.md）');
       return 1;
     }
     const client = makeBrandClient(flags);

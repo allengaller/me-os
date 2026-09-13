@@ -29,7 +29,7 @@ MeOS 是一个**本地优先**的个人操作系统：以「五维框架」（�
 
 - 🔒 **本地优先** — 数据存于本地 SQLite，不经云端转发；MeLog 条目只在你显式配置 LLM 端点时才会外发
 - 🔌 **AI-Ready** — 内置 MCP Server（JSON-RPC 2.0 over HTTP），任何 MCP 客户端可读写时间线、运行技能
-- 📐 **标准先行** — [MeLog Standard](./docs/melog/STANDARD.md) 开放数据信封 / Ingest API / Skill 清单格式，连接器与技能可社区共建
+- 📐 **标准先行** — [MeLog Standard](./docs/实践/记录/标准.md) 开放数据信封 / Ingest API / Skill 清单格式，连接器与技能可社区共建
 - 🧩 **方法论工具箱** — 平衡轮、OKR、GTD、时间矩阵内置为产品能力，而非单一方法论绑架
 
 ## 技术栈
@@ -139,12 +139,12 @@ pnpm --filter @meos/api db:studio   # Prisma Studio 查看数据
 | [gtm/README.md](./gtm/README.md) | **GTM 总纲**：定位 / 人群 / 定价 / 渠道 / 上线计划 / 指标（含分册） |
 | [DESIGN.md](./DESIGN.md) | 五维模型、数据模型、跨维度联动、Dashboard 设计 |
 | [GETTING_STARTED.md](./GETTING_STARTED.md) | 启动、环境变量、常见问题 |
-| [docs/MELOG.md](./docs/MELOG.md) | MeLog 板块总览：架构、API、MCP 工具、技能引擎 |
-| [docs/melog/STANDARD.md](./docs/melog/STANDARD.md) | MeLog Standard v0.1 开放格式规范 |
+| [docs/实践/记录/总览.md](./docs/实践/记录/总览.md) | MeLog 板块总览：架构、API、MCP 工具、技能引擎 |
+| [docs/实践/记录/标准.md](./docs/实践/记录/标准.md) | MeLog Standard v0.1 开放格式规范 |
 | [packages/connectors/README.md](./packages/connectors/README.md) | 官方连接器使用指南 |
-| [docs/BRAND.md](./docs/BRAND.md) | 品牌板块总览与品牌蓝本摘要 |
-| [docs/OVERVIEW.md](./docs/OVERVIEW.md) | 五维框架方法论总览 |
-| [docs/INTEGRATION.md](./docs/INTEGRATION.md) | 五维协同运作指南 |
+| [docs/实践/品牌/总览.md](./docs/实践/品牌/总览.md) | 品牌板块总览与品牌蓝本摘要 |
+| [docs/理论/方法论/总览.md](./docs/理论/方法论/总览.md) | 五维框架方法论总览 |
+| [docs/理论/方法论/整合.md](./docs/理论/方法论/整合.md) | 五维协同运作指南 |
 
 ## 路线图
 
@@ -153,7 +153,7 @@ pnpm --filter @meos/api db:studio   # Prisma Studio 查看数据
 - ⬜ **阶段三** — MeLog 桌面控制中心（Tauri）、Skill 市场、智能化与生态
 - ⬜ **阶段四** — 持续优化与商业化；多端扩展（Mac 原生应用、微信小程序、CLI）
 
-MeLog 板块自身的迭代路线见 [docs/MELOG.md §路线图](./docs/MELOG.md)。
+MeLog 板块自身的迭代路线见 [docs/实践/记录/总览.md §路线图](./docs/实践/记录/总览.md)。
 
 ## 常见问题
 

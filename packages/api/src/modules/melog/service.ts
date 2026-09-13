@@ -275,7 +275,7 @@ export async function executeSkill(
         periodStart: start,
         periodEnd: end,
         summary: '该技能暂无可执行实现',
-        result: `技能 **${slug}** 已安装，但当前 Skill Runner 只支持内置技能（health-insight / knowledge-recall / life-recap）。\n\n社区技能需要通过本地 Skill Runner 或 MCP 工具桥接执行，见 docs/melog/STANDARD.md。`,
+        result: `技能 **${slug}** 已安装，但当前 Skill Runner 只支持内置技能（health-insight / knowledge-recall / life-recap）。\n\n社区技能需要通过本地 Skill Runner 或 MCP 工具桥接执行，见 docs/实践/记录/标准.md。`,
       },
       include: { skill: { select: { name: true, slug: true } } },
     });

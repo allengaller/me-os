@@ -14,7 +14,7 @@ import {
  * 字段映射：followers 当前粉丝数；totals.views/likes/comments/shares 累计互动值。
  * 每次导入写 followers 累计；totals 按「与上次同来源（platform+handle）的累计差值」算本周期增量。
  *
- * 见 docs/brand/SNAPSHOTS.md 「封闭平台手动采集」一节获取各平台的 JSON 模板。
+ * 见 docs/实践/品牌/快照调度.md 「封闭平台手动采集」一节获取各平台的 JSON 模板。
  */
 
 export interface ImportTotals {

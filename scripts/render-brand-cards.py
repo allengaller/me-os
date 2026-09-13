@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""黑屏白字静态资产渲染器（品牌 VI：docs/INTERVIEW_PLAYBOOK.md 第四章）
+"""黑屏白字静态资产渲染器（品牌 VI：docs/实践/访谈IP/开拍手册.md 第四章）
 
 用法：
     python3 scripts/render-brand-cards.py            # 渲染全部
@@ -28,7 +28,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "docs" / "assets" / "brand"
+OUT_DIR = ROOT / "docs" / "资产" / "品牌"
 
 FONT_CJK_BOLD = "/System/Library/Fonts/Hiragino Sans GB.ttc"  # index 2 = W6
 FONT_CJK_REGULAR = "/System/Library/Fonts/STHeiti Medium.ttc"  # index 1 = Heiti SC Medium

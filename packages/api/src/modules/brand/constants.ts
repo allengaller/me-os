@@ -1,4 +1,4 @@
-// 品牌档案蓝本默认值：取值来源 docs/brand/DESIGN.md §0「品牌档案速览」。
+// 品牌档案蓝本默认值：取值来源 docs/实践/品牌/蓝本.md §0「品牌档案速览」。
 // 首次进入品牌板块（尚未保存档案）时预填这些值，用户可直接在此基础上修改；
 // 仅随 PUT 保存才落库（配合「空壳 profile 不写库」约定）。slogan 未定稿（DESIGN.md §7.1），保持 null。
 export const BRAND_PROFILE_DEFAULTS = {

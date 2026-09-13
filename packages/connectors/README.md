@@ -1,6 +1,6 @@
 # @meos/melog-connectors — MeOS 官方连接器
 
-把外部数据源按 [MeLog Standard](../../docs/melog/STANDARD.md) 推送到 MeOS 的统一时间线，
+把外部数据源按 [MeLog Standard](../../docs/实践/记录/标准.md) 推送到 MeOS 的统一时间线，
 并把外部渠道（B站等）的指标数据按快照语义写入品牌板块。
 零运行时依赖（Node.js 18+ 的全局 fetch），CLI 入口为 `melog-connector`。
 
@@ -23,12 +23,12 @@
 > ⚠️ **dida365 接口提示**：习惯打卡与任务备注来自滴答清单 Web 端使用的**非官方接口**
 > （`api.dida365.com/api/v2/*`），不受官方 SLA 保护，可能随版本变动。
 > token 仅在本机与滴答服务器之间传输，请勿分享给他人。
-> 完整的选型调研、实测接口结构与测试报告见 [docs/melog/CONNECTOR_DIDA365.md](../../docs/melog/CONNECTOR_DIDA365.md)。
+> 完整的选型调研、实测接口结构与测试报告见 [docs/实践/记录/滴答清单.md](../../docs/实践/记录/滴答清单.md)。
 
 > ⚠️ **B站 接口提示**：来自 Web 端**非官方 API**（`api.bilibili.com` 下的 `relation/stat`
 > / `x/space/wbi/arc/search` / `x/web-interface/view`），不受 SLA 保护，可能随版本变动。
 > 投稿统计需要登录 Cookie；从浏览器登录 bilibili.com 后复制 Cookie（至少 `SESSDATA`+`buvid3`）以 `--cookie` 传入。
-> 详细策略与各平台接入对照见 [docs/brand/DATA_SOURCES.md](../../docs/brand/DATA_SOURCES.md)。
+> 详细策略与各平台接入对照见 [docs/理论/调研/品牌/数据接入.md](../../docs/理论/调研/品牌/数据接入.md)。
 
 ## 使用
 
@@ -86,7 +86,7 @@ node packages/connectors/dist/cli.js brand-bilibili --mid 123456 --dry-run
 followers 是当前**累计**值，views/likes/comments/shares 是与上次游标对比的**本周期增量**，
 首次运行记为基线（增量字段为 null），不覆盖已有的累计游标。
 
-`brand-youtube` / `brand-github` 同样只写品牌快照；详见 [docs/brand/SNAPSHOTS.md](../../docs/brand/SNAPSHOTS.md)（含每日定时调度脚本与 cron 示例）。
+`brand-youtube` / `brand-github` 同样只写品牌快照；详见 [docs/实践/品牌/快照调度.md](../../docs/实践/品牌/快照调度.md)（含每日定时调度脚本与 cron 示例）。
 
 ### 滴答清单 token 获取
 
