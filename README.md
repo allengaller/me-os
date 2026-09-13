@@ -11,7 +11,6 @@ MeOS 是一个**本地优先**的个人操作系统：以「五维框架」（�
 
 | 板块 | 回答的问题 | 能力概览 | 路由 |
 |---|---|---|---|
-| **Today** | 我今天的状态如何 | 今日待办、习惯打卡、反思入口的一站式工作台 | `/` |
 | **方向 Direction** | 我要去哪里 | 愿景、领域、目标与关键结果（OKR）、工作流画布、心态格言、平衡轮 | `/direction` |
 | **行动 Action** | 我今天做什么 | 待办看板、习惯打卡与日历 | `/action` |
 | **认知 Cognition** | 我要搞懂什么 | 课题研究、洞察笔记、阅读清单 | `/cognition` |
@@ -20,7 +19,8 @@ MeOS 是一个**本地优先**的个人操作系统：以「五维框架」（�
 | **MeLog** | 我的生活数据说了什么 | 健康笔记聊天记录汇入统一时间线，技能加工 + MCP 接入 + 定时调度 | `/melog` |
 | **品牌 Brand** | 我的输出如何影响世界 | 品牌资产中枢、内容流水线（一鱼多吃）、渠道矩阵与指标、作品库 | `/brand` |
 
-另有 **Workbench**（`/workbench`）个人工作台与 Chrome 扩展快捷入口。
+板块之外还有两个**聚合入口**：**Today**（`/`，今日待办、习惯打卡与反思入口的一站式工作台）与
+**Workbench**（`/workbench`，个人工作台），以及 Chrome 扩展快捷入口。
 
 五维之间的联动是系统的灵魂：反思的「明日计划」一键生成待办、复盘自动汇总目标/待办/习惯数据、
 平衡轮从目标完成率推算评分、健康记录自动带入每日反思 —— 详见 [DESIGN.md](./DESIGN.md)。
@@ -52,7 +52,7 @@ MeOS 是一个**本地优先**的个人操作系统：以「五维框架」（�
 - `apps/chrome-extension` — Chrome MV3 扩展（快捷入口）
 - `packages/connectors` — MeLog 官方连接器 CLI（Apple Health 导出解析 / chatlog 兼容），零运行时依赖
 - `packages/shared` — 前后端共享类型与分页工具
-- Turbo monorepo + Vitest（约 24 个测试文件）+ GitHub Actions CI（lint / build / test）
+- Turbo monorepo + Vitest（31 个测试文件）+ GitHub Actions CI（lint / build / test）
 
 ## 项目结构
 
