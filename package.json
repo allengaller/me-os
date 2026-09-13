@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev --parallel",
+    "meos": "./scripts/meos",
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",

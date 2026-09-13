@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyDelegate = any;
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import {
@@ -30,27 +32,69 @@ export async function ensureBrandMockUser(prisma: PrismaClient) {
   });
 }
 
-/** 把 brand-seed-data.ts 的 mock 数据应用到指定用户（幂等）。
- *  先清掉该用户 id 以 seed-brand- 开头的旧 mock 行再按文件重建，文件是这批数据的唯一来源；
- *  用户在页面上自建的行（uuid id）不受影响。关联的 Topic 只创建、不更新（认知板块数据，可能挂有笔记）。 */
-export async function seedBrandMockData(prisma: PrismaClient, userId: string) {
-  await prisma.contentDistribution.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.metricSnapshot.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.contentItem.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.platformChannel.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.brandPillar.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.work.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
-  await prisma.brandProfile.deleteMany({ where: { userId, id: { startsWith: SEED_PREFIX } } });
+/** mock 行的幂等写入（seed 脚本专用，model 传 prisma.<delegate>）：
+ *  - 行不存在 → 以 isMock: true 创建；
+ *  - 行存在且 isMock: true → 按 seed 文件刷新（文件是 mock 行的唯一来源）；
+ *  - 行存在但 isMock: false → 已被用户认领，跳过，页面上的改动保留。 */
+async function upsertMockRow(model: AnyDelegate, id: string, data: Record<string, unknown>) {
+  const existing = await model.findUnique({ where: { id } });
+  if (existing && !existing.isMock) return;
+  if (existing) {
+    await model.update({ where: { id }, data: { ...data, isMock: true } });
+    return;
+  }
+  await model.create({ data: { id, isMock: true, ...data } });
+}
 
-  const profile = await prisma.brandProfile.create({
-    data: { id: `${SEED_PREFIX}profile`, userId, ...BRAND_MOCK_PROFILE },
-  });
+/** 清掉不在 seed 文件里的旧 mock 行（isMock: true 且 id 不在本次集合中）。已认领行（isMock: false）不受影响。 */
+async function pruneMockRows(model: AnyDelegate, userId: string, keepIds: string[]) {
+  await model.deleteMany({ where: { userId, isMock: true, id: { notIn: keepIds } } });
+}
+
+/** 把 brand-seed-data.ts 的 mock 数据应用到指定用户（幂等）。
+ *  mock 行以 isMock: true 标记，页面显示 mock 徽标；用户认领（isMock: false）后本脚本不再覆盖。
+ *  用户自建的行（uuid id、isMock: false）始终不受影响。
+ *  关联的 Topic 只创建、不更新（认知板块数据，可能挂有笔记）。 */
+export async function seedBrandMockData(prisma: PrismaClient, userId: string) {
+  await pruneMockRows(prisma.contentDistribution, userId, BRAND_MOCK_DISTRIBUTIONS.map(
+    (d) => `${SEED_PREFIX}dist-${d.contentKey}-${d.channelKey}`,
+  ));
+  await pruneMockRows(prisma.metricSnapshot, userId, BRAND_MOCK_SNAPSHOTS.map(
+    (s) => `${SEED_PREFIX}snapshot-${s.channelKey}-${s.daysAgo}`,
+  ));
+  await pruneMockRows(prisma.contentItem, userId, BRAND_MOCK_CONTENTS.map(
+    (c) => `${SEED_PREFIX}content-${c.key}`,
+  ));
+  await pruneMockRows(prisma.platformChannel, userId, BRAND_MOCK_CHANNELS.map(
+    (c) => `${SEED_PREFIX}channel-${c.key}`,
+  ));
+  await pruneMockRows(prisma.brandPillar, userId, BRAND_MOCK_PILLARS.map(
+    (p) => `${SEED_PREFIX}pillar-${p.key}`,
+  ));
+  await pruneMockRows(prisma.work, userId, BRAND_MOCK_WORKS.map(
+    (w) => `${SEED_PREFIX}work-${w.key}`,
+  ));
+
+  // 品牌档案：userId 唯一。若用户已自建档案（非 mock 的固定 id 行），不再写入 mock 档案，支柱挂到现有档案下。
+  const fixedProfileId = `${SEED_PREFIX}profile`;
+  let profileId = fixedProfileId;
+  const fixedProfile = await prisma.brandProfile.findUnique({ where: { id: fixedProfileId } });
+  const userProfile = await prisma.brandProfile.findUnique({ where: { userId } });
+  if (!fixedProfile?.isMock && userProfile && userProfile.id !== fixedProfileId) {
+    profileId = userProfile.id;
+  } else {
+    await upsertMockRow(prisma.brandProfile, fixedProfileId, { userId, ...BRAND_MOCK_PROFILE });
+  }
 
   const pillarIds = new Map<string, string>();
   for (const p of BRAND_MOCK_PILLARS) {
     const id = `${SEED_PREFIX}pillar-${p.key}`;
-    await prisma.brandPillar.create({
-      data: { id, userId, profileId: profile.id, name: p.name, description: p.description, order: p.order },
+    await upsertMockRow(prisma.brandPillar, id, {
+      userId,
+      profileId,
+      name: p.name,
+      description: p.description,
+      order: p.order,
     });
     pillarIds.set(p.key, id);
   }
@@ -58,19 +102,16 @@ export async function seedBrandMockData(prisma: PrismaClient, userId: string) {
   const channelIds = new Map<string, string>();
   for (const c of BRAND_MOCK_CHANNELS) {
     const id = `${SEED_PREFIX}channel-${c.key}`;
-    await prisma.platformChannel.create({
-      data: {
-        id,
-        userId,
-        platform: c.platform,
-        name: c.name,
-        handle: c.handle,
-        url: c.url,
-        positioning: c.positioning,
-        cadence: c.cadence,
-        status: c.status,
-        order: c.order,
-      },
+    await upsertMockRow(prisma.platformChannel, id, {
+      userId,
+      platform: c.platform,
+      name: c.name,
+      handle: c.handle,
+      url: c.url,
+      positioning: c.positioning,
+      cadence: c.cadence,
+      status: c.status,
+      order: c.order,
     });
     channelIds.set(c.key, id);
   }
@@ -86,86 +127,75 @@ export async function seedBrandMockData(prisma: PrismaClient, userId: string) {
       category: BRAND_MOCK_TOPIC.category,
       status: BRAND_MOCK_TOPIC.status,
       priority: BRAND_MOCK_TOPIC.priority,
+      isMock: true,
     },
   });
 
   const contentIds = new Map<string, string>();
   for (const item of BRAND_MOCK_CONTENTS) {
     const id = `${SEED_PREFIX}content-${item.key}`;
-    await prisma.contentItem.create({
-      data: {
-        id,
-        userId,
-        title: item.title,
-        type: item.type,
-        status: item.status,
-        coreMessage: item.coreMessage,
-        outline: item.outline,
-        priority: item.priority,
-        tags: item.tags,
-        pillarId: item.pillarKey ? (pillarIds.get(item.pillarKey) ?? null) : null,
-        topicId: item.topicSeedId,
-        reviewNote: item.reviewNote,
-        publishedAt: item.publishedDaysAgo != null ? daysAgo(item.publishedDaysAgo) : null,
-        publishDue: item.publishDueInDays != null ? inDays(item.publishDueInDays) : null,
-        order: item.order,
-      },
+    await upsertMockRow(prisma.contentItem, id, {
+      userId,
+      title: item.title,
+      type: item.type,
+      status: item.status,
+      coreMessage: item.coreMessage,
+      outline: item.outline,
+      priority: item.priority,
+      tags: item.tags,
+      pillarId: item.pillarKey ? (pillarIds.get(item.pillarKey) ?? null) : null,
+      topicId: item.topicSeedId,
+      reviewNote: item.reviewNote,
+      publishedAt: item.publishedDaysAgo != null ? daysAgo(item.publishedDaysAgo) : null,
+      publishDue: item.publishDueInDays != null ? inDays(item.publishDueInDays) : null,
+      order: item.order,
     });
     contentIds.set(item.key, id);
   }
 
   for (const d of BRAND_MOCK_DISTRIBUTIONS) {
-    await prisma.contentDistribution.create({
-      data: {
-        id: `${SEED_PREFIX}dist-${d.contentKey}-${d.channelKey}`,
-        userId,
-        contentId: contentIds.get(d.contentKey)!,
-        channelId: channelIds.get(d.channelKey)!,
-        status: d.status,
-        adaptedTitle: d.adaptedTitle,
-        url: null,
-        publishedAt: d.publishedDaysAgo != null ? daysAgo(d.publishedDaysAgo) : null,
-        views: d.views,
-        likes: d.likes,
-        comments: d.comments,
-        shares: d.shares,
-        note: d.note,
-      },
+    await upsertMockRow(prisma.contentDistribution, `${SEED_PREFIX}dist-${d.contentKey}-${d.channelKey}`, {
+      userId,
+      contentId: contentIds.get(d.contentKey)!,
+      channelId: channelIds.get(d.channelKey)!,
+      status: d.status,
+      adaptedTitle: d.adaptedTitle,
+      url: null,
+      publishedAt: d.publishedDaysAgo != null ? daysAgo(d.publishedDaysAgo) : null,
+      views: d.views,
+      likes: d.likes,
+      comments: d.comments,
+      shares: d.shares,
+      note: d.note,
     });
   }
 
   for (const s of BRAND_MOCK_SNAPSHOTS) {
-    await prisma.metricSnapshot.create({
-      data: {
-        id: `${SEED_PREFIX}snapshot-${s.channelKey}-${s.daysAgo}`,
-        userId,
-        channelId: channelIds.get(s.channelKey)!,
-        followers: s.followers,
-        views: s.views ?? null,
-        likes: s.likes ?? null,
-        comments: s.comments ?? null,
-        shares: s.shares ?? null,
-        revenue: s.revenue ?? null,
-        note: s.note ?? null,
-        recordedAt: daysAgo(s.daysAgo),
-      },
+    await upsertMockRow(prisma.metricSnapshot, `${SEED_PREFIX}snapshot-${s.channelKey}-${s.daysAgo}`, {
+      userId,
+      channelId: channelIds.get(s.channelKey)!,
+      followers: s.followers,
+      views: s.views ?? null,
+      likes: s.likes ?? null,
+      comments: s.comments ?? null,
+      shares: s.shares ?? null,
+      revenue: s.revenue ?? null,
+      note: s.note ?? null,
+      recordedAt: daysAgo(s.daysAgo),
     });
   }
 
   for (const w of BRAND_MOCK_WORKS) {
-    await prisma.work.create({
-      data: {
-        id: `${SEED_PREFIX}work-${w.key}`,
-        userId,
-        name: w.name,
-        type: w.type,
-        status: w.status,
-        description: w.description,
-        progress: w.progress,
-        url: w.url,
-        launchedAt: w.launchedDaysAgo != null ? daysAgo(w.launchedDaysAgo) : null,
-        order: w.order,
-      },
+    await upsertMockRow(prisma.work, `${SEED_PREFIX}work-${w.key}`, {
+      userId,
+      name: w.name,
+      type: w.type,
+      status: w.status,
+      description: w.description,
+      progress: w.progress,
+      url: w.url,
+      launchedAt: w.launchedDaysAgo != null ? daysAgo(w.launchedDaysAgo) : null,
+      order: w.order,
     });
   }
 }

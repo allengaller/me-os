@@ -32,6 +32,7 @@ interface MindsetSlogan {
   category: string;
   order: number;
   pinned: boolean;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +54,7 @@ interface Reflection {
   improvements?: string;
   tomorrow?: string;
   tags?: string;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +70,7 @@ interface Review {
   lowlights?: string;
   learnings?: string;
   nextActions?: string;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,6 +82,7 @@ interface Insight {
   content: string;
   tags?: string | null;
   category?: string | null;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +99,7 @@ interface Topic {
   actionPlan?: string;
   notes: TopicNote[];
   order: number;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -119,6 +124,7 @@ interface Todo {
   goalId?: string;
   domainId?: string;
   completedAt?: string;
+  mock?: boolean;
   createdAt: string;
 }
 
@@ -134,6 +140,7 @@ interface Habit {
   domainId?: string;
   isActive: boolean;
   order: number;
+  mock?: boolean;
   createdAt: string;
 }
 
@@ -155,6 +162,7 @@ interface Goal {
   startDate?: string;
   endDate?: string;
   deadline?: string;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -178,6 +186,7 @@ interface Vision {
   content: string;
   version: number;
   isActive: boolean;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -194,6 +203,7 @@ interface Contact {
   notes?: string;
   lastContact?: string;
   domainId?: string;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -211,6 +221,7 @@ interface ReadingItem {
   topicId?: string;
   startDate?: string;
   endDate?: string;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -224,6 +235,7 @@ interface HealthRecord {
   note?: string;
   date: string;
   recordedAt?: string;
+  mock?: boolean;
   createdAt: string;
 }
 
@@ -277,6 +289,7 @@ interface Subscription {
   notes?: string;
   config?: Record<string, unknown>;
   quotas: QuotaDefinition[];
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -322,6 +335,7 @@ interface SubscriptionDashboardSummary {
     daysUntilRenewal: number;
     isActive: boolean;
     autoRenew: boolean;
+    mock?: boolean;
   }[];
   stats: {
     totalMonthlySpend: number;
@@ -1546,6 +1560,7 @@ export const localDB = {
           daysUntilRenewal: 30,
           isActive: s.isActive,
           autoRenew: s.autoRenew,
+          mock: s.mock,
         })),
         stats: {
           totalMonthlySpend: activeSubscriptions.reduce((sum, s) => {

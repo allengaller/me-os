@@ -1,13 +1,13 @@
-// Prisma Schema for MeOS
-// 五维人生管理系统数据模型
+// Prisma Schema for MeOS — 云端 PostgreSQL 变体
+// 由 scripts/gen-cloud-schema.py 从 schema.prisma 派生，改模型请改那边
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./meos.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ==================== 用户模型 ====================
@@ -15,7 +15,7 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String
+  password  String?
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -49,6 +49,7 @@ model User {
   brandDistributions ContentDistribution[]
   works              Work[]
   metricSnapshots    MetricSnapshot[]
+  @@map("users")
 }
 
 // ==================== 方向 (Direction) ====================
@@ -65,6 +66,7 @@ model Vision {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isActive])
+  @@map("visions")
 }
 
 model Domain {
@@ -90,6 +92,7 @@ model Domain {
 
   @@unique([userId, identifier])
   @@index([userId])
+  @@map("domains")
 }
 
 model Goal {
@@ -115,6 +118,7 @@ model Goal {
 
   @@index([userId, status])
   @@index([domainId])
+  @@map("goals")
 }
 
 model KeyResult {
@@ -133,6 +137,10 @@ model KeyResult {
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   @@index([goalId])
+  userId    String
+
+  @@map("key_results")
+  @@index([userId])
 }
 
 model MindsetSlogan {
@@ -150,6 +158,7 @@ model MindsetSlogan {
 
   @@index([userId, category])
   @@index([userId, order])
+  @@map("mindset_slogans")
 }
 
 model BalanceWheelScore {
@@ -165,6 +174,7 @@ model BalanceWheelScore {
 
   @@index([userId, createdAt])
   @@index([domainId])
+  @@map("balance_wheel_scores")
 }
 
 // ==================== 行动 (Action) ====================
@@ -194,6 +204,7 @@ model Todo {
   @@index([userId, status])
   @@index([userId, dueDate])
   @@index([goalId])
+  @@map("todos")
 }
 
 model Habit {
@@ -217,6 +228,7 @@ model Habit {
   logs   HabitLog[]
 
   @@index([userId, isActive])
+  @@map("habits")
 }
 
 model HabitLog {
@@ -230,6 +242,10 @@ model HabitLog {
 
   @@unique([habitId, date])
   @@index([habitId, date])
+  userId    String
+
+  @@map("habit_logs")
+  @@index([userId])
 }
 
 // ==================== 认知 (Cognition) ====================
@@ -261,6 +277,7 @@ model Topic {
   @@index([userId, category])
   @@index([userId, status])
   @@index([userId, order])
+  @@map("topics")
 }
 
 model TopicNote {
@@ -276,6 +293,7 @@ model TopicNote {
 
   @@index([topicId, createdAt])
   @@index([userId])
+  @@map("topic_notes")
 }
 
 model InsightNote {
@@ -295,6 +313,7 @@ model InsightNote {
   @@index([userId, createdAt])
   @@index([category])
   @@index([topicId])
+  @@map("insight_notes")
 }
 
 model ReadingItem {
@@ -318,6 +337,7 @@ model ReadingItem {
 
   @@index([userId, status])
   @@index([topicId])
+  @@map("reading_items")
 }
 
 // ==================== 反思 (Reflection) ====================
@@ -346,6 +366,7 @@ model Reflection {
 
   @@index([userId, date])
   @@index([type])
+  @@map("reflections")
 }
 
 model PeriodicReview {
@@ -360,7 +381,7 @@ model PeriodicReview {
   insights     String?
   nextFocus    String?
 
-  dataSummary String?
+  dataSummary Json?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -368,6 +389,7 @@ model PeriodicReview {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, startDate])
+  @@map("periodic_reviews")
 }
 
 // ==================== 资源 (Resources) ====================
@@ -386,7 +408,7 @@ model Subscription {
   autoRenew    Boolean   @default(false)
   websiteUrl   String?
   notes        String?
-  config       String?
+  config       Json?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -395,6 +417,7 @@ model Subscription {
   usageRecords MonthlyUsage[]
 
   @@index([userId, isActive])
+  @@map("subscriptions")
 }
 
 model QuotaDefinition {
@@ -415,6 +438,10 @@ model QuotaDefinition {
 
   @@unique([subscriptionId, name])
   @@index([subscriptionId])
+  userId    String
+
+  @@map("quota_definitions")
+  @@index([userId])
 }
 
 model MonthlyUsage {
@@ -430,6 +457,10 @@ model MonthlyUsage {
 
   @@unique([subscriptionId, year, month])
   @@index([subscriptionId, year, month])
+  userId    String
+
+  @@map("monthly_usages")
+  @@index([userId])
 }
 
 model QuotaUsage {
@@ -445,6 +476,10 @@ model QuotaUsage {
 
   @@unique([monthlyUsageId, quotaDefinitionId])
   @@index([quotaDefinitionId])
+  userId    String
+
+  @@map("quota_usages")
+  @@index([userId])
 }
 
 model Contact {
@@ -467,6 +502,7 @@ model Contact {
 
   @@index([userId, relation])
   @@index([userId, lastContact])
+  @@map("contacts")
 }
 
 model HealthRecord {
@@ -482,6 +518,7 @@ model HealthRecord {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, type, recordedAt])
+  @@map("health_records")
 }
 
 // ==================== MeLog (生活数据汇聚) ====================
@@ -494,7 +531,7 @@ model MeLogSource {
   category   String // health | note | im | media | location | custom
   adapter    String // 连接器标识：chatlog / apple-health / obsidian / notion / webhook ...
   endpoint   String? // 连接器推送地址或本地服务地址（仅作登记，后端不会主动请求）
-  config     String? // JSON：连接器配置（脱敏后的）
+  config     Json? // JSON：连接器配置（脱敏后的）
   status     String    @default("disconnected") // connected | disconnected | error
   lastSyncAt DateTime?
   syncCursor String? // 增量同步游标，由连接器维护
@@ -508,6 +545,7 @@ model MeLogSource {
 
   @@unique([userId, adapter, name])
   @@index([userId, category])
+  @@map("melog_sources")
 }
 
 // 条目：统一事件信封，MeLog Standard 的最小数据单元
@@ -520,7 +558,7 @@ model MeLogEntry {
   type       String // 细分类型：sleep / steps / chat-message / markdown-doc ...
   title      String
   content    String?
-  payload    String? // JSON：结构化数据（如 {"steps":8000}）
+  payload    Json? // JSON：结构化数据（如 {"steps":8000}）
   tags       String? // 逗号分隔
   actor      String? // 参与者/作者（IM 场景为发送者）
   occurredAt DateTime
@@ -533,6 +571,7 @@ model MeLogEntry {
   @@index([userId, occurredAt])
   @@index([userId, category, occurredAt])
   @@index([sourceId])
+  @@map("melog_entries")
 }
 
 // 技能：对 MeLog 条目进行加工的预封装最佳实践
@@ -544,7 +583,7 @@ model MeLogSkill {
   description String?
   version     String    @default("0.1.0")
   source      String    @default("builtin") // builtin | community | custom
-  config      String? // JSON：技能参数
+  config      Json? // JSON：技能参数
   isActive    Boolean   @default(true)
   lastRunAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -556,6 +595,7 @@ model MeLogSkill {
 
   @@unique([userId, slug])
   @@index([userId, isActive])
+  @@map("melog_skills")
 }
 
 // 运行记录：技能执行一次的产出
@@ -568,8 +608,8 @@ model MeLogRun {
   periodEnd   DateTime?
   summary     String?
   result      String? // Markdown 报告
-  stats       String? // JSON：输入条目统计
-  entryIds    String? // JSON 数组：本次运行引用的条目 ID
+  stats       Json? // JSON：输入条目统计
+  entryIds    Json? // JSON 数组：本次运行引用的条目 ID
   createdAt   DateTime  @default(now())
 
   user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -577,6 +617,7 @@ model MeLogRun {
 
   @@index([userId, createdAt])
   @@index([skillId])
+  @@map("melog_runs")
 }
 
 // 技能定时调度：每天固定时间或按固定间隔运行一个技能
@@ -598,6 +639,7 @@ model MeLogSchedule {
 
   @@unique([userId, skillId])
   @@index([enabled, nextRunAt])
+  @@map("melog_schedules")
 }
 
 // ==================== 工作流 (Workflow) ====================
@@ -615,6 +657,7 @@ model Workflow {
   connections WorkflowConnection[]
 
   @@index([userId])
+  @@map("workflows")
 }
 
 model WorkflowStep {
@@ -634,6 +677,10 @@ model WorkflowStep {
   targetConnections WorkflowConnection[] @relation("TargetStep")
 
   @@index([workflowId])
+  userId    String
+
+  @@map("workflow_steps")
+  @@index([userId])
 }
 
 model WorkflowConnection {
@@ -652,6 +699,10 @@ model WorkflowConnection {
   @@index([workflowId])
   @@index([sourceStepId])
   @@index([targetStepId])
+  userId    String
+
+  @@map("workflow_connections")
+  @@index([userId])
 }
 
 // ==================== 品牌 (Brand) ====================
@@ -673,6 +724,7 @@ model BrandProfile {
 
   user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   pillars BrandPillar[]
+  @@map("brand_profiles")
 }
 
 // 内容支柱
@@ -693,6 +745,7 @@ model BrandPillar {
 
   @@unique([profileId, name])
   @@index([userId])
+  @@map("brand_pillars")
 }
 
 // 平台渠道
@@ -717,6 +770,7 @@ model PlatformChannel {
 
   @@unique([userId, platform, name])
   @@index([userId, status])
+  @@map("platform_channels")
 }
 
 // 内容（流水线核心）
@@ -748,6 +802,7 @@ model ContentItem {
   @@index([userId, status])
   @@index([pillarId])
   @@index([topicId])
+  @@map("content_items")
 }
 
 // 分发记录（一鱼多吃）：同内容同渠道一条，重复发布时更新
@@ -775,6 +830,7 @@ model ContentDistribution {
 
   @@unique([contentId, channelId])
   @@index([channelId])
+  @@map("content_distributions")
 }
 
 // 作品库：书 / 课程 / App / 小程序 / Web App 等长期工程
@@ -796,6 +852,7 @@ model Work {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
+  @@map("works")
 }
 
 // 渠道指标快照：followers 为累计值，views/likes/comments/shares/revenue 为本周期增量
@@ -818,4 +875,5 @@ model MetricSnapshot {
   channel PlatformChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
   @@index([channelId, recordedAt])
+  @@map("metric_snapshots")
 }

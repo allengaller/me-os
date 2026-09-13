@@ -1,0 +1,612 @@
+#!/bin/bash
+# =================================================================
+# meos — 本地开发启动 / 管理 / 监控 CLI
+#
+# 用法：./scripts/meos <命令> [目标] [选项]
+# 依赖：bash + curl + lsof（macOS/Linux 自带）。零 npm 依赖是刻意的——
+#       启动器的职责包含跑 pnpm install，TS 版在依赖坏掉时自己就跑不起来。
+#
+# 设计（改这个文件前先读，三条都是踩过的坑）：
+# 1. 进程组监管，不是单 PID。`pnpm dev &` 拿到的 $! 是 pnpm 包装进程，
+#    真正 LISTEN 的是它 spawn 的 node 孙进程。所以用 `set -m` 让每个服务
+#    独占进程组，pidfile 记组长 PID（== PGID），停止时 `kill -- -PGID`
+#    整组信号才能穿透到孙进程。
+# 2. 双轨真相。pidfile 只用于「停」；「查」一律用 lsof 取真实监听 PID。
+#    两者交叉核对，不一致就报 drift——不重犯「监控包装进程」的错。
+# 3. 停服前校验归属。绝不按进程名 pgrep|kill（会误杀别处的 vite/tsx）；
+#    先确认组长 cwd 在本仓库内，否则拒绝。
+#
+# 兼容：/bin/bash 3.2（macOS 自带）。禁用 bash 4 语法：declare -A、
+#       ${v,,}、${v^^}、mapfile、&>>。
+# 另：set -o pipefail 下，探测类函数（lsof/ps 无匹配时非零）必须自己
+#     吞掉退出码，否则 `x=$(listen_pid …)` 会直接终止脚本。
+# =================================================================
+
+set -euo pipefail
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+STATE_DIR="$ROOT_DIR/.meos"
+RUN_DIR="$STATE_DIR/run"
+LOG_DIR="$STATE_DIR/logs"
+
+API_DIR="$ROOT_DIR/packages/api"
+WEB_DIR="$ROOT_DIR/apps/web"
+API_PORT="${MEOS_API_PORT:-3001}"
+WEB_PORT="${MEOS_WEB_PORT:-3000}"
+DB_FILE="$API_DIR/src/prisma/meos.db"
+STOP_WAIT="${MEOS_STOP_WAIT:-5}"
+
+# --- 输出 ---
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  RED=$'\033[0;31m'; GREEN=$'\033[0;32m'; YELLOW=$'\033[1;33m'
+  BLUE=$'\033[0;34m'; DIM=$'\033[2m'; NC=$'\033[0m'
+else
+  RED=''; GREEN=''; YELLOW=''; BLUE=''; DIM=''; NC=''
+fi
+
+log()   { echo "${BLUE}[$(date '+%H:%M:%S')]${NC} $*"; }
+info()  { echo "${GREEN}✓${NC} $*"; }
+warn()  { echo "${YELLOW}⚠${NC} $*"; }
+error() { echo "${RED}✗${NC} $*" >&2; }
+die()   { error "$*"; exit 1; }
+
+# =================================================================
+# 服务抽象（bash 3.2 无关联数组，用 case 派发）
+# =================================================================
+svc_port() { case "$1" in api) echo "$API_PORT";; web) echo "$WEB_PORT";; esac; }
+svc_dir()  { case "$1" in api) echo "$API_DIR";;  web) echo "$WEB_DIR";;  esac; }
+svc_url()  { case "$1" in api) echo "http://localhost:$API_PORT/health";; web) echo "http://localhost:$WEB_PORT/";; esac; }
+pidfile_of() { echo "$RUN_DIR/$1.pid"; }
+logfile_of() { echo "$LOG_DIR/$1.log"; }
+
+ensure_dirs() { mkdir -p "$RUN_DIR" "$LOG_DIR"; }
+
+# --- 探测类：无匹配也要返回 0，否则 pipefail 会炸调用方 ---
+listen_pids() { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t 2>/dev/null | tr '\n' ' ' | sed 's/ *$//' || true; }
+listen_pid()  { listen_pids "$1" | awk '{print $1}' || true; }
+port_owner()  { lsof -nP -iTCP:"$1" -sTCP:LISTEN 2>/dev/null | awk 'NR>1{print $1" (pid "$2")"; exit}' || true; }
+proc_cwd()    { lsof -p "$1" -a -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -1 || true; }
+proc_uptime() { ps -o etime= -p "$1" 2>/dev/null | tr -d ' ' || true; }
+
+# 这个是真判断，允许非零
+port_busy()  { lsof -nP -iTCP:"$1" -sTCP:LISTEN -t >/dev/null 2>&1; }
+proc_alive() { kill -0 "$1" 2>/dev/null; }
+
+# 组长的工作目录必须落在本仓库内，否则拒绝终止
+cwd_in_repo() {
+  local cwd; cwd=$(proc_cwd "$1")
+  [ -n "$cwd" ] || return 1
+  case "$cwd" in
+    "$ROOT_DIR"/*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# 端口上的监听者是否属于本 CLI 记录的进程组。
+# 没这个判断，别人占着 3000 时 start 会误报「已在运行，跳过」。
+listener_is_ours() {
+  local name="$1" pid="$2" pgid lpgid
+  pgid=$(read_pidfile "$name" || echo "")
+  [ -n "$pgid" ] || return 1
+  lpgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ' || true)
+  [ -n "$lpgid" ] && [ "$lpgid" = "$pgid" ]
+}
+
+# 无 pidfile 时返回 1，调用方必须 `|| echo ""` 兜住
+read_pidfile() {
+  local f; f=$(pidfile_of "$1")
+  [ -f "$f" ] || return 1
+  cat "$f"
+}
+
+# =================================================================
+# start
+# =================================================================
+launch_one() {
+  local name="$1" dir port pgid
+  dir=$(svc_dir "$name"); port=$(svc_port "$name")
+  ensure_dirs
+
+  if port_busy "$port"; then
+    error "$name 启动失败：端口 $port 已被 $(port_owner "$port") 占用"
+    error "  不自动改端口（避免端口漂移）。先 ./scripts/meos stop，或设 MEOS_API_PORT / MEOS_WEB_PORT"
+    return 1
+  fi
+
+  # 关键：set -m 让下面的子 shell 独占进程组，$! == 组长 PID == PGID
+  set -m
+  case "$name" in
+    api) ( cd "$dir" && PORT="$port" pnpm dev ) >> "$(logfile_of api)" 2>&1 & ;;
+    web) ( cd "$dir" && pnpm dev --port "$port" --strictPort ) >> "$(logfile_of web)" 2>&1 & ;;
+  esac
+  pgid=$!
+  set +m
+
+  echo "$pgid" > "$(pidfile_of "$name")"
+  disown "$pgid" 2>/dev/null || true
+  log "$name 启动中（进程组 ${pgid}）→ :${port}，日志 ${DIM}$(logfile_of "$name")${NC}"
+}
+
+# 返回 0 健康 / 1 超时 / 2 进程已退出
+wait_healthy() {
+  local name="$1" limit="${2:-45}" i=0 pgid
+  while [ "$i" -lt "$limit" ]; do
+    if curl -sf -m 2 -o /dev/null "$(svc_url "$name")"; then return 0; fi
+    pgid=$(read_pidfile "$name" || echo "")
+    if [ -n "$pgid" ] && ! proc_alive "$pgid"; then return 2; fi
+    sleep 1; i=$((i + 1))
+  done
+  return 1
+}
+
+tail_log() { [ -f "$(logfile_of "$1")" ] && tail -20 "$(logfile_of "$1")"; return 0; }
+
+# 部分失败时回滚：只停本次真正拉起的服务，不碰之前就存在的
+rollback() {
+  local t
+  [ -n "${1:-}" ] || return 0
+  warn "回滚本次拉起的进程：$1"
+  for t in $1; do stop_one "$t" "" || true; done
+}
+
+cmd_start() {
+  local targets="api web" bootstrap=""
+  for a in "$@"; do
+    case "$a" in
+      --api) targets="api" ;;
+      --web) targets="web" ;;
+      --bootstrap) bootstrap=1 ;;
+      *) die "start 不认识参数：$a" ;;
+    esac
+  done
+
+  [ -z "$bootstrap" ] || run_bootstrap
+
+  preflight_or_die
+  ensure_dirs
+
+  local t lp rc=0 started_now="" already_up=""
+  for t in $targets; do
+    lp=$(listen_pid "$(svc_port "$t")")
+    if [ -n "$lp" ] && listener_is_ours "$t" "$lp"; then
+      info "$t 已在 :$(svc_port "$t") 运行（PID ${lp}），跳过"
+      already_up="$already_up $t"
+      continue
+    fi
+    if [ -n "$lp" ]; then
+      error "$t 无法启动：端口 $(svc_port "$t") 被本 CLI 之外的进程占用 → $(port_owner "$(svc_port "$t")")"
+      error "  meos 不改端口漂移、也不代杀陌生进程。请自行停掉它，或用 MEOS_API_PORT / MEOS_WEB_PORT 换端口"
+      rollback "$started_now"
+      die "启动失败，已回滚本次拉起的进程"
+    fi
+    launch_one "$t" || { rollback "$started_now"; die "$t 启动失败"; }
+    started_now="$started_now $t"
+  done
+
+  local ready="" all="$already_up $started_now"
+  for t in $all; do
+    rc=0
+    wait_healthy "$t" 45 || rc=$?
+    if [ "$rc" -eq 0 ]; then
+      ready="$ready $t"
+    else
+      [ "$rc" -eq 2 ] && error "$t 进程在启动过程中退出" || error "$t 45s 内未通过健康检查"
+      error "  日志尾部："
+      tail_log "$t" >&2 || true
+      rollback "$started_now"
+      die "$t 启动失败，已回滚本次拉起的进程"
+    fi
+  done
+
+  info "已就绪：${ready# }"
+  local r
+  for r in $ready; do
+    if [ "$r" = api ]; then
+      printf '  %sapi%s  http://localhost:%s   (Swagger: /docs)\n' "${DIM}" "${NC}" "$API_PORT"
+    else
+      printf '  %sweb%s  http://localhost:%s\n' "${DIM}" "${NC}" "$WEB_PORT"
+    fi
+  done
+  echo "  停止：./scripts/meos stop      状态：./scripts/meos status"
+}
+
+# 首次引导：装依赖 → 生成 .env → 建库 → 灌品牌 mock 数据
+run_bootstrap() {
+  log "bootstrap：安装依赖"
+  pnpm install --frozen-lockfile 2>/dev/null || pnpm install || die "依赖安装失败"
+
+  if [ ! -f "$API_DIR/.env" ]; then
+    cat > "$API_DIR/.env" <<EOF
+PORT=$API_PORT
+NODE_ENV=development
+JWT_SECRET=$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')
+EOF
+    info "已生成 ${DIM}$API_DIR/.env${NC}（含随机 JWT_SECRET）"
+  else
+    info "packages/api/.env 已存在，跳过"
+  fi
+
+  log "bootstrap：初始化数据库"
+  ( cd "$API_DIR" && pnpm db:generate >/dev/null 2>&1 ) || warn "prisma generate 有问题"
+  ( cd "$API_DIR" && pnpm db:push >/dev/null 2>&1 ) || die "db push 失败"
+  ( cd "$API_DIR" && pnpm db:seed:brand >/dev/null 2>&1 ) || warn "品牌 mock 数据跳过"
+  info "数据库就绪 ${DIM}$DB_FILE${NC}"
+}
+
+# 启动前的硬检查（Node 版本只 warn，理由见 doctor）
+preflight_or_die() {
+  command -v pnpm >/dev/null 2>&1 || die "未找到 pnpm"
+  [ -d "$ROOT_DIR/node_modules" ] || die "依赖未安装，先跑：./scripts/meos start --bootstrap"
+}
+
+# =================================================================
+# stop
+# =================================================================
+stop_one() {
+  local name="$1" force="${2:-}" pgid cwd lp rc i=0
+  pgid=$(read_pidfile "$name" || echo "")
+
+  # 没有 pidfile：可能是别人起的进程。默认拒绝，--force 且校验 cwd 后才动
+  if [ -z "$pgid" ]; then
+    lp=$(listen_pid "$(svc_port "$name")")
+    if [ -z "$lp" ]; then info "$name 本就未运行"; return 0; fi
+    if [ -z "$force" ]; then
+      warn "$name 在 :$(svc_port "$name") 有监听进程 ${lp}，但没有 pidfile（非本 CLI 启动）"
+      warn "  确认要停它请加 --force（仍会校验该进程工作目录属于本仓库）"
+      return 1
+    fi
+    if cwd_in_repo "$lp"; then
+      kill -TERM "$lp" 2>/dev/null || true
+      info "$name 已终止（PID ${lp}）"
+      return 0
+    fi
+    die "拒绝终止 PID ${lp}：cwd=$(proc_cwd "$lp") 不在本仓库内"
+  fi
+
+  if ! proc_alive "$pgid"; then
+    warn "pidfile 记录的进程组 $pgid 已不存在，清理陈旧 pidfile"
+    rm -f "$(pidfile_of "$name")"
+    return 0
+  fi
+
+  cwd=$(proc_cwd "$pgid")
+  cwd_in_repo "$pgid" || die "拒绝终止进程组 ${pgid}：其工作目录 ${cwd:-未知} 不在本仓库内（可能是别的项目的同名进程）"
+
+  log "终止 $name 整个进程组（PGID ${pgid}）"
+  kill -TERM -- "-$pgid" 2>/dev/null || true
+
+  while [ "$i" -lt "$STOP_WAIT" ]; do
+    proc_alive "$pgid" || break
+    sleep 1; i=$((i + 1))
+  done
+
+  if proc_alive "$pgid"; then
+    warn "${STOP_WAIT}s 未退出，升级为 KILL"
+    kill -KILL -- "-$pgid" 2>/dev/null || true
+  fi
+  rm -f "$(pidfile_of "$name")"
+
+  # 收尾核对：端口应当已释放
+  lp=$(listen_pid "$(svc_port "$name")")
+  if [ -n "$lp" ]; then
+    warn "$name 进程组已停，但 :$(svc_port "$name") 仍有监听者 ${lp}（可能是外部进程）"
+    return 1
+  fi
+  info "$name 已停止"
+  return 0
+}
+
+cmd_stop() {
+  local targets="api web" force="" t rc=0
+  for a in "$@"; do
+    case "$a" in
+      --api) targets="api" ;;
+      --web) targets="web" ;;
+      --force) force=1 ;;
+      *) die "stop 不认识参数：$a" ;;
+    esac
+  done
+  for t in $targets; do
+    stop_one "$t" "$force" || rc=1
+  done
+  return $rc
+}
+
+cmd_restart() {
+  local targets="$*"
+  cmd_stop $targets || true
+  sleep 1
+  cmd_start $targets
+}
+
+# =================================================================
+# status
+# =================================================================
+print_row() {
+  local name="$1"
+  local port lp pgid state up health lf
+  port=$(svc_port "$name")
+  lp=$(listen_pid "$port")
+  pgid=$(read_pidfile "$name" || echo "")
+  lf=$(logfile_of "$name")
+
+  if [ -n "$lp" ]; then
+    up=$(proc_uptime "$lp")
+    if curl -sf -m 2 -o /dev/null "$(svc_url "$name")"; then health="ok"; else health="no-resp"; fi
+    if [ -z "$pgid" ]; then state="running*"; else state="running"; fi
+  elif [ -n "$pgid" ] && proc_alive "$pgid"; then
+    state="starting"; up="-"; health="-"; lp="-"
+  else
+    state="stopped"; up="-"; health="-"; lp="-"
+  fi
+
+  printf '  %-7s %-9s %-8s %-6s %-9s %-8s %s\n' \
+    "$name" "$state" "${lp:--}" "$port" "${up:--}" "${health:--}" "${lf#$ROOT_DIR/}"
+}
+
+cmd_status() {
+  echo "MeOS @ ${DIM}$ROOT_DIR${NC}"
+  printf '  %-7s %-9s %-8s %-6s %-9s %-8s %s\n' \
+    SERVICE STATE PID PORT UPTIME HEALTH LOG
+  print_row api
+  print_row web
+
+  local t pgid lp drift=""
+  for t in api web; do
+    pgid=$(read_pidfile "$t" || echo "")
+    lp=$(listen_pid "$(svc_port "$t")")
+    if [ -n "$pgid" ] && [ -n "$lp" ] && ! proc_alive "$pgid"; then
+      drift="$drift  $t: pidfile 进程组 $pgid 已死，但端口仍被 $lp 占用"
+    fi
+    if [ -n "$lp" ] && [ -z "$pgid" ]; then
+      drift="$drift  $t: 端口由本 CLI 之外的进程 $lp 持有（未纳管）"
+    fi
+  done
+
+  if [ -n "$drift" ]; then
+    echo
+    warn "pidfile 与真实监听不一致："
+    echo "$drift" | sed 's/^/  /'
+    echo "  ${DIM}（status 以 lsof 真实监听为准；pidfile 只用于 stop）${NC}"
+  fi
+  return 0
+}
+
+cmd_watch() {
+  local iv="${1:-2}"
+  case "$iv" in *[!0-9]*) die "watch 间隔必须是秒数，收到：$iv" ;; esac
+  trap 'echo; exit 0' INT
+  while :; do
+    clear 2>/dev/null || printf '\033[2J\033[H'
+    date '+%H:%M:%S'
+    cmd_status
+    sleep "$iv"
+  done
+}
+
+# =================================================================
+# logs
+# =================================================================
+cmd_logs() {
+  local targets="api web" follow="" n="50" files="" t
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --api) targets="api" ;;
+      --web) targets="web" ;;
+      -f|--follow) follow=1 ;;
+      -n) shift; n="${1:-50}" ;;
+      *) die "logs 不认识参数：$1" ;;
+    esac
+    shift
+  done
+  for t in $targets; do
+    [ -f "$(logfile_of "$t")" ] || continue
+    files="$files $(logfile_of "$t")"
+  done
+  [ -n "$files" ] || { warn "还没有日志文件（先 meos start）"; return 0; }
+  # shellcheck disable=SC2086
+  if [ -n "$follow" ]; then tail -n "$n" -f $files
+  # shellcheck disable=SC2086
+  else tail -n "$n" $files; fi
+}
+
+# =================================================================
+# health
+# =================================================================
+cmd_health() {
+  local wait_s=0 t ok=0 i=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --wait) shift; wait_s="${1:-30}" ;;
+      *) die "health 不认识参数：$1" ;;
+    esac
+    shift
+  done
+  for t in api web; do
+    if [ "$wait_s" -gt 0 ]; then
+      i=0
+      while [ "$i" -lt "$wait_s" ]; do
+        curl -sf -m 2 -o /dev/null "$(svc_url "$t")" && break
+        sleep 1; i=$((i + 1))
+      done
+    fi
+    if curl -sf -m 3 -o /dev/null "$(svc_url "$t")"; then
+      info "$t  $(svc_url "$t")"; ok=$((ok + 1))
+    else
+      error "$t  $(svc_url "$t")  不可达"
+    fi
+  done
+  [ "$ok" -eq 2 ] || exit 1
+}
+
+# =================================================================
+# doctor
+# =================================================================
+FAILS=0
+check() {  # check <ok|warn|fail> <标题> <说明>
+  case "$1" in
+    ok)   printf '  %s✓%s %-11s %s\n' "$GREEN" "$NC" "$2" "$3" ;;
+    warn) printf '  %s⚠%s %-11s %s\n' "$YELLOW" "$NC" "$2" "$3" ;;
+    fail) printf '  %s✗%s %-11s %s\n' "$RED" "$NC" "$2" "$3"; FAILS=$((FAILS + 1)) ;;
+  esac
+}
+
+cmd_doctor() {
+  local fix="" a nv nm pv who p
+  for a in "$@"; do case "$a" in --fix) fix=1 ;; *) die "doctor 不认识参数：$a" ;; esac; done
+  FAILS=0
+
+  echo "环境体检  ${DIM}$ROOT_DIR${NC}"
+
+  # Node：GETTING_STARTED 推荐 18–20、CI 用 20；本机常是更新的大版本且实测可跑，
+  #       所以只 warn 不 fail——别把能用的环境判成阻塞。
+  if command -v node >/dev/null 2>&1; then
+    nv=$(node -v); nm=${nv#v}; nm=${nm%%.*}
+    if [ "$nm" -ge 18 ] && [ "$nm" -le 20 ]; then
+      check ok "node" "${nv}（推荐区间 18–20）"
+    else
+      check warn "node" "$nv — 文档推荐 18–20（CI 用 20，Node 22+ 曾有兼容问题）；实测可跑则忽略"
+    fi
+  else
+    check fail "node"   "未找到；需要 Node 18+"
+  fi
+
+  if command -v pnpm >/dev/null 2>&1; then
+    pv=$(pnpm -v)
+    case "$pv" in
+      8.*|9.*|1[0-9]*) check ok "pnpm"    "$pv" ;;
+      *) check warn "pnpm"  "$pv — 仓库 packageManager 锁 8.15.0" ;;
+    esac
+  else
+    check fail "pnpm"  "未找到；npm i -g pnpm@8"
+  fi
+
+  if [ -d "$ROOT_DIR/node_modules" ]; then check ok "deps"     "node_modules 已存在"
+  else check fail "deps"    "未安装；跑 ./scripts/meos start --bootstrap"; fi
+
+  for p in "$API_PORT" "$WEB_PORT"; do
+    if port_busy "$p"; then
+      who=$(port_owner "$p")
+      check warn "port $p"  "被 $who 占用；meos 不会自动改端口，需先停它"
+    else
+      check ok "port $p"   "空闲"
+    fi
+  done
+
+  if [ -f "$API_DIR/.env" ]; then check ok "env"      "packages/api/.env 存在"
+  else check warn "env"    "缺失；--bootstrap 会生成（含随机 JWT_SECRET）"; fi
+
+  if [ -f "$DB_FILE" ]; then
+    if [ -w "$DB_FILE" ]; then check ok "sqlite"   "可写 ${DB_FILE#$ROOT_DIR/}"
+    else check fail "sqlite" "文件存在但不可写：$DB_FILE"; fi
+  else
+    check warn "sqlite" "尚未建库；--bootstrap 或 meos db push 会创建"
+  fi
+
+  if command -v curl >/dev/null 2>&1; then check ok "curl"     "可用（health/status 依赖）"
+  else check fail "curl"   "缺失"; fi
+
+  echo
+  if [ "$FAILS" -gt 0 ]; then
+    error "$FAILS 项需要处理"
+    if [ -n "$fix" ]; then log "--fix：执行 bootstrap"; run_bootstrap
+    else echo "  处理后可试：./scripts/meos doctor --fix"; fi
+    return 1
+  fi
+  [ -z "$fix" ] || run_bootstrap
+  info "体检通过"
+}
+
+# =================================================================
+# db
+# =================================================================
+confirm_or_die() {
+  local msg="$1" yes="${2:-}" ans
+  [ "$yes" = "--yes" ] && return 0
+  [ -t 0 ] || die "$msg —— 非交互终端，拒绝执行；确认请加 --yes"
+  printf '%s\n确认？输入 yes 继续，其他任意输入取消： ' "$msg"
+  read -r ans || die "读取确认失败"
+  [ "$ans" = "yes" ] || { warn "已取消"; exit 0; }
+}
+
+cmd_db() {
+  local sub="${1:-}"
+  shift || true
+  case "$sub" in
+    generate)   ( cd "$API_DIR" && pnpm db:generate ) ;;
+    push)       ( cd "$API_DIR" && pnpm db:push ) ;;
+    migrate)    ( cd "$API_DIR" && pnpm db:migrate ) ;;
+    seed)       ( cd "$API_DIR" && pnpm db:seed ) ;;
+    seed:brand) ( cd "$API_DIR" && pnpm db:seed:brand ) ;;
+    studio)     ( cd "$API_DIR" && pnpm db:studio ) ;;
+    reset)
+      confirm_or_die "meos db reset 会清空 $DB_FILE 的全部数据" "${1:-}"
+      ( cd "$API_DIR" && pnpm exec prisma db push --force-reset --schema=src/prisma/schema.prisma )
+      info "数据库已重建，记得 meos db seed"
+      ;;
+    ""|-h|--help) die "用法：meos db <generate|push|migrate|seed|seed:brand|studio|reset>" ;;
+    *) die "db 子命令不认识：$sub" ;;
+  esac
+}
+
+cmd_open() {
+  port_busy "$WEB_PORT" || die "前端未在 :$WEB_PORT 运行，先 meos start"
+  if command -v open >/dev/null 2>&1; then open "http://localhost:$WEB_PORT" >/dev/null 2>&1 || true
+  elif command -v xdg-open >/dev/null 2>&1; then xdg-open "http://localhost:$WEB_PORT" >/dev/null 2>&1 || true
+  fi
+  info "已打开 http://localhost:$WEB_PORT"
+}
+
+# =================================================================
+# 用法 / 派发
+# =================================================================
+usage() {
+  cat <<EOF
+meos — MeOS 本地开发启动 / 管理 / 监控
+
+  ./scripts/meos <命令> [选项]
+
+命令
+  start              拉起前后端（默认 web :$WEB_PORT / api :${API_PORT}），探活通过后返回
+    --web | --api    只起单边
+    --bootstrap      首次：装依赖 → 生成 .env → db push → 灌品牌 mock 数据
+  stop               按进程组终止（TERM → ${STOP_WAIT}s → KILL）
+    --force          允许停非本 CLI 启动的监听进程（仍校验 cwd 归属）
+  restart            stop 后 start，参数同 start
+  status             服务状态表：真实监听 PID / 端口 / 运行时长 / health / 日志
+  watch [秒]         循环刷 status（默认 2s，Ctrl+C 退出）
+  logs               看日志；-f 跟随，-n N 行数，--web / --api 选边
+  health             探活，全通则退出码 0（可进脚本/CI）；--wait S 轮询到超时
+  doctor             环境体检（只读）；--fix 顺带跑 bootstrap
+  db <子命令>        generate | push | migrate | seed | seed:brand | studio | reset
+  open               浏览器打开前端
+
+环境变量
+  MEOS_API_PORT / MEOS_WEB_PORT   改端口（默认 $API_PORT / ${WEB_PORT}）
+  MEOS_STOP_WAIT                  stop 的 TERM 等待秒数（默认 ${STOP_WAIT}）
+  NO_COLOR=1                      关闭配色
+
+状态目录  .meos/{run,logs}（已 gitignore）
+EOF
+}
+
+main() {
+  [ $# -gt 0 ] || { usage; exit 1; }
+  local cmd="$1"; shift
+  case "$cmd" in
+    start)   cmd_start "$@" ;;
+    stop)    cmd_stop "$@" ;;
+    restart) cmd_restart "$@" ;;
+    status)  cmd_status ;;
+    watch)   cmd_watch "$@" ;;
+    logs)    cmd_logs "$@" ;;
+    health)  cmd_health "$@" ;;
+    doctor)  cmd_doctor "$@" ;;
+    db)      cmd_db "$@" ;;
+    open)    cmd_open ;;
+    -h|--help|help) usage ;;
+    *) error "未知命令：$cmd"; echo; usage; exit 1 ;;
+  esac
+}
+
+main "$@"

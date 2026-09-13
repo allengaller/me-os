@@ -2,25 +2,56 @@
 
 ## 1. 环境要求
 
-- Node.js 18–20 LTS（Node 22 存在兼容性问题；CI 使用 Node 20）
+- Node.js 18+（推荐 18–20 LTS，CI 使用 Node 20；Node 22 实测可正常启动与渲染，若遇异常再回退 20）
 - pnpm >= 8.0.0
 
-## 2. 一键启动（推荐）
+## 2. 日常开发：meos CLI
+
+进程启动、停止、状态、日志、环境体检统一走一个零依赖脚本 `scripts/meos`
+（只需 bash + curl + lsof）。它是进程监管逻辑的唯一实现，`dev.sh` 现在只是指向它的兼容壳。
 
 ```bash
-./dev.sh
+./scripts/meos start          # 拉起前后端，健康检查通过才返回
+./scripts/meos stop           # 干净停服
+./scripts/meos status         # 谁在跑、真实监听 PID、运行时长、健康与否
+./scripts/meos logs -f        # 跟随日志
 ```
 
-脚本自动完成以下流程，适合首次运行：
+也可写作 `pnpm meos <命令>`。
 
-1. 清理 3000 / 3001 / 5173–5175 端口与残留进程
-2. 预检 Node / pnpm 版本 → `pnpm install`
-3. 自动生成 `packages/api/.env`（含随机 `JWT_SECRET`）
-4. `prisma generate` + `db push` 初始化数据库
-5. 启动后端（:3001）与前端（:3000）
-6. `/health` 健康检查通过后自动打开浏览器
+### 2.1 首次运行
 
-## 3. 手动启动
+```bash
+./dev.sh                      # 等价于 ./scripts/meos start --bootstrap
+```
+
+`--bootstrap` 依次完成：`pnpm install` → 生成 `packages/api/.env`（含随机 `JWT_SECRET`）
+→ `prisma generate` + `db push` → 灌品牌 mock 数据 → 启动。
+
+日常迭代不要带 `--bootstrap`，直接 `meos start` 快得多。
+
+### 2.2 停止与排查
+
+```bash
+./scripts/meos stop                   # 停两端
+./scripts/meos stop --web             # 只停前端
+./scripts/meos doctor                 # 环境体检（只读）：Node/pnpm/端口/依赖/.env/SQLite
+./scripts/meos restart --api          # 只重启后端
+./scripts/meos health                 # 探活，全通退出码 0，可用于脚本
+```
+
+`stop` 按**进程组**终止（TERM → 等待 → KILL），能穿透 `pnpm → tsx → node` 整棵树；
+停之前会校验该进程的工作目录确实在本仓库内，**不会按进程名误杀你别处跑的 vite**。
+
+### 2.3 其余命令
+
+`meos help` 看全量。另有 `watch [秒]`（循环刷状态）、`db <push|seed|studio|…>`
+（转发 Prisma）、`open`（打开浏览器）。
+
+端口默认 `web :3000 / api :3001`，用 `MEOS_WEB_PORT` / `MEOS_API_PORT` 覆盖。
+端口被占时**显式失败并点名占用者，不自动漂移端口**。
+
+## 3. 手动启动（不用 meos 的原生路径）
 
 ```bash
 pnpm install
@@ -38,13 +69,16 @@ pnpm backend:dev     # 仅后端 → http://localhost:3001
 pnpm web:dev         # 仅前端 → http://localhost:3000
 ```
 
+注意这条路径由 turbo 前台托管，Ctrl+C 停当前终端；**没有** `meos` 的 pidfile 与进程组监管，
+所以中途 kill 掉终端可能留下占端口的孤儿，此时 `meos status` 会把它标成 `running*`（未纳管）。
+
 首次访问 http://localhost:3000 ，点击「立即注册」创建账号，系统会自动初始化 8 个默认生活领域（职业、健康、家庭、财务、学习、社交、休闲、精神）。
 
 ## 4. 环境变量
 
 | 变量 | 位置 | 说明 |
 |---|---|---|
-| `JWT_SECRET` | `packages/api/.env` | **生产必填**，未设置时生产环境拒绝启动（`dev.sh` 会自动生成） |
+| `JWT_SECRET` | `packages/api/.env` | **生产必填**，未设置时生产环境拒绝启动（`meos start --bootstrap` 会自动生成） |
 | `MEOS_DEV_AUTH` | `packages/api/.env` | 设为 `true` 时跳过认证，使用 mock 用户 `mock-user-1`（仅开发） |
 | `MELOG_LLM_BASE_URL` | `packages/api/.env` | OpenAI 兼容端点（DeepSeek / 通义兼容 / Moonshot / 本地 Ollama 等），启用 MeLog 技能 LLM 运行器 |
 | `MELOG_LLM_API_KEY` | `packages/api/.env` | 对应 API Key，本地服务可填任意非空值 |
@@ -55,9 +89,12 @@ pnpm web:dev         # 仅前端 → http://localhost:3000
 ## 5. 环境验证
 
 ```bash
-curl http://localhost:3001/health
+./scripts/meos doctor                        # 体检：Node/pnpm/端口/依赖/.env/SQLite 可写
+./scripts/meos health                        # 探活两端，全通则退出码 0
 pnpm test                                    # 全量测试（Vitest）
-pnpm --filter @meos/api db:studio            # Prisma Studio 查看数据
+pnpm meos db studio                          # Prisma Studio 查看数据
+
+curl http://localhost:3001/health            # 不依赖 CLI 的裸检查
 ```
 
 ## 6. 首次使用导览
@@ -107,8 +144,17 @@ pnpm install --force
 
 ### 端口被占用
 
+`meos` **不会**自动清理端口，也不会按进程名 `kill`（旧 `dev.sh` 那么做会误杀你别处跑的
+vite/tsx）。它只点名占用者，让你决定：
+
 ```bash
-./dev.sh        # 脚本会自动清理 3000/3001/5173-5175 端口
+./scripts/meos status          # 看该端口是不是自己纳管的
+./scripts/meos stop            # 是 meos 起的 → 直接停
+lsof -nP -iTCP:3000 -sTCP:LISTEN    # 是外部进程 → 自己确认后再处理
+MEOS_WEB_PORT=3200 ./scripts/meos start --web   # 或临时换端口起
 ```
+
+若确认那个外部进程就是本仓库遗留的孤儿（`status` 里显示为 `running*` 未纳管），
+`meos stop --web --force` 可停它——它仍会先校验该进程工作目录属于本仓库才动手。
 
 更多文档见 [README 文档导航](./README.md#文档导航)。

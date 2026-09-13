@@ -5,6 +5,8 @@ import { format } from 'date-fns';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 type Relation = 'friend' | 'colleague' | 'mentor' | 'family' | 'other';
 type ContactFreq = 'weekly' | 'monthly' | 'quarterly';
@@ -20,6 +22,7 @@ interface Contact {
   contactFreq?: ContactFreq;
   lastContact?: string;
   domainId?: string;
+  mock?: boolean;
   createdAt: string;
   domain?: { id: string; name: string };
 }
@@ -422,7 +425,17 @@ export default function Contacts() {
                   <User className="w-5 h-5 text-slate-400" />
                 </div>
                 <div>
-                  <h3 className="text-base font-medium text-slate-900">{contact.name}</h3>
+                  <h3 className="text-base font-medium text-slate-900 flex items-center gap-1.5">
+                    {contact.name}
+                    {isMockItem(contact) && (
+                      <MockBadge
+                        onClick={async () => {
+                          await api.patch(`/contacts/${contact.id}`, { mock: false });
+                          loadData();
+                        }}
+                      />
+                    )}
+                  </h3>
                   {(contact.title || contact.company) && (
                     <p className="text-sm text-slate-500">
                       {contact.title}{contact.title && contact.company ? ' @ ' : ''}{contact.company}

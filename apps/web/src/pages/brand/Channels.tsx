@@ -5,6 +5,7 @@ import api from '../../lib/api';
 import Modal from '../../components/Modal';
 import FormField from '../../components/FormField';
 import EmptyState from '../../components/EmptyState';
+import MockBadge from '../../components/MockBadge';
 import { CHANNEL_STATUS_LABELS, PLATFORM_PRESETS } from './constants';
 import type { MetricSnapshot, PlatformChannel } from '@meos/shared';
 
@@ -108,6 +109,15 @@ export default function Channels() {
     }
   };
 
+  const claimChannel = async (channel: PlatformChannel) => {
+    try {
+      await api.patch(`/brand/channels/${channel.id}`, { isMock: false });
+      await load();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -145,8 +155,9 @@ export default function Channels() {
             <div key={channel.id} className="card p-4">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
                     {channel.name}
+                    {channel.isMock && <MockBadge onClick={() => claimChannel(channel)} />}
                   </p>
                   {channel.handle && (
                     <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>

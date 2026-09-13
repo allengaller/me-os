@@ -1,7 +1,8 @@
 // 品牌板块演示数据（mock）—— 本文件是品牌 mock 数据的唯一来源，直接修改后重新应用即可生效：
 //   手动应用：pnpm --filter @meos/api db:seed:brand（dev.sh 启动时也会自动应用一次）
-// 重新应用会重建 id 以 `seed-brand-` 开头的行（这批 mock 行在页面上的改动会被覆盖）；
-// 你自己在页面上新建的数据（uuid id）不受影响。
+// mock 行在数据库中带 isMock: true 标记，页面上显示 mock 徽标；
+// 在页面编辑时取消勾选「演示数据」即认领该行（isMock: false），重新应用 seed 不再覆盖它；
+// 你自己在页面上新建的数据（uuid id、isMock: false）不受影响。
 //
 // 取值约定：
 //   标注「来源」的取自你提供的品牌文档（docs/实践/品牌/蓝本.md、docs/实践/品牌/起号.md），按原文取值；

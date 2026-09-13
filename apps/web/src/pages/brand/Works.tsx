@@ -4,6 +4,7 @@ import api from '../../lib/api';
 import Modal from '../../components/Modal';
 import FormField from '../../components/FormField';
 import EmptyState from '../../components/EmptyState';
+import MockBadge, { MockClaimField } from '../../components/MockBadge';
 import { WORK_TYPE_LABELS, WORK_TYPE_ICONS, WORK_STATUS_LABELS, WORK_STATUS_ORDER } from './constants';
 import type { Work } from '@meos/shared';
 
@@ -15,6 +16,7 @@ const emptyForm = {
   progress: '',
   url: '',
   launchedAt: '',
+  isMock: false,
 };
 
 export default function Works() {
@@ -54,6 +56,7 @@ export default function Works() {
       progress: work.progress || '',
       url: work.url || '',
       launchedAt: work.launchedAt ? work.launchedAt.slice(0, 10) : '',
+      isMock: !!work.isMock,
     });
   };
 
@@ -87,6 +90,7 @@ export default function Works() {
         progress: form.progress || null,
         url: form.url || null,
         launchedAt: form.launchedAt || null,
+        isMock: form.isMock,
       });
       setEditing(null);
       await load();
@@ -179,6 +183,7 @@ export default function Works() {
           className="input resize-none"
         />
       </FormField>
+      {!isCreate && <MockClaimField isMock={form.isMock} onChange={(v) => setForm((f) => ({ ...f, isMock: v }))} />}
       <div className="flex justify-between">
         {!isCreate && (
           <button onClick={handleDelete} className="text-sm text-red-500 hover:text-red-600">
@@ -228,6 +233,7 @@ export default function Works() {
                         <div className="flex items-center gap-2 mb-2">
                           <Icon size={15} className="text-slate-400" />
                           <span className="text-xs text-slate-400">{WORK_TYPE_LABELS[work.type]}</span>
+                          {work.isMock && <MockBadge className="ml-auto" />}
                         </div>
                         <p className="text-sm font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
                           {work.name}

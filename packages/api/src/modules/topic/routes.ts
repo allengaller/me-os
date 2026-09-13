@@ -31,6 +31,7 @@ const updateTopicSchema = z.object({
   relatedDomainId: z.string().nullable().optional(),
   goalId: z.string().nullable().optional(),
   order: z.number().optional(),
+  isMock: z.boolean().optional(),
 });
 
 const createNoteSchema = z.object({

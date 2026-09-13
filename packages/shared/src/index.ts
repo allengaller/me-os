@@ -172,6 +172,7 @@ export interface Topic {
   goalId?: string;
   currentUnderstanding?: string;
   actionPlan?: string;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
   notes?: TopicNote[];
@@ -401,6 +402,7 @@ export interface BrandProfile {
   toneOfVoice?: string | null;
   targetAudience?: string | null;
   visualNotes?: string | null;
+  isMock?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -412,6 +414,7 @@ export interface BrandPillar {
   name: string;
   description?: string | null;
   order: number;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -427,6 +430,7 @@ export interface PlatformChannel {
   cadence?: string | null;
   status: ChannelStatus;
   order: number;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -445,6 +449,7 @@ export interface ContentDistribution {
   comments?: number | null;
   shares?: number | null;
   note?: string | null;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
   channel?: PlatformChannel;
@@ -466,6 +471,7 @@ export interface ContentItem {
   tags?: string | null;
   publishedAt?: string | null;
   order: number;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
   pillar?: BrandPillar | null;
@@ -484,6 +490,7 @@ export interface Work {
   url?: string | null;
   launchedAt?: string | null;
   order: number;
+  isMock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -499,6 +506,7 @@ export interface MetricSnapshot {
   shares?: number | null;
   revenue?: number | null;
   note?: string | null;
+  isMock?: boolean;
   recordedAt: string;
   createdAt: string;
 }

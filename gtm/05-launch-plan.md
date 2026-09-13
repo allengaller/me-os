@@ -12,7 +12,7 @@
 | 1 | Landing page | 主标题「把你的生活数据，变成你拥有的操作系统」（01 分册 §六）；GitHub + waitlist（商业化举手）两个 CTA | ⬜ |
 | 2 | README 英文摘要 | 顶部双语简介 + demo GIF；GIF 展示：MeLog 技能运行 → 报告生成 → MCP 调用 | ⬜ |
 | 3 | Docker 一键起 | `docker run` 到可用（降低 Persona 1 门槛的最大单点） | ⬜ |
-| 4 | 快速上手 3 分钟视频 | 对齐 GETTING_STARTED 的 dev.sh 流程，B 站 + README 互链 | ⬜ |
+| 4 | 快速上手 3 分钟视频 | 对齐 GETTING_STARTED 的 `meos` 流程（start / status / stop），B 站 + README 互链 | ⬜ |
 | 5 | CONTRIBUTING.md + roadmap issue | 贡献者入口与公开路线图（生态飞轮前提） | ⬜ |
 | 6 | 种子内测 10 人 | 来自个人网络；目标：每人完成「1 次反思 + 1 个数据源」，收集 aha moment 原话 | ⬜ |
 | 7 | 帖子物料 | Show HN/V2EX/PH 文案各一版，按 01 分册渠道话术 | ⬜ |

@@ -4,6 +4,7 @@ import api from '../../lib/api';
 import Modal from '../../components/Modal';
 import FormField from '../../components/FormField';
 import EmptyState from '../../components/EmptyState';
+import MockBadge, { MockClaimField } from '../../components/MockBadge';
 import { CONTENT_STATUS_LABELS, CONTENT_TYPE_LABELS, CONTENT_TYPE_ICONS, PRIORITY_LABELS } from './constants';
 import type { BrandPillar, ContentDistribution, ContentItem, ContentStatus, PlatformChannel } from '@meos/shared';
 
@@ -27,6 +28,7 @@ const emptyForm = {
   coreMessage: '',
   outline: '',
   reviewNote: '',
+  isMock: false,
 };
 
 export default function Pipeline() {
@@ -77,6 +79,7 @@ export default function Pipeline() {
         coreMessage: full.coreMessage || '',
         outline: full.outline || '',
         reviewNote: full.reviewNote || '',
+        isMock: !!full.isMock,
       });
     } catch (err) {
       console.error(err);
@@ -108,6 +111,7 @@ export default function Pipeline() {
         coreMessage: form.coreMessage || null,
         outline: form.outline || null,
         reviewNote: form.reviewNote || null,
+        isMock: form.isMock,
       });
       setEditing(null);
       await load();
@@ -231,6 +235,7 @@ export default function Pipeline() {
                           {content.priority === 'high' && (
                             <span className="text-xs px-1.5 rounded bg-red-50 text-red-600">{PRIORITY_LABELS.high}</span>
                           )}
+                          {content.isMock && <MockBadge className="ml-auto" />}
                         </div>
                         <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
                           {content.title}
@@ -373,7 +378,12 @@ export default function Pipeline() {
                   return (
                     <div key={channel.id} className="p-3 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">{channel.name}</span>
+                        <span className="text-sm font-medium flex items-center gap-1.5">
+                          {channel.name}
+                          {dist?.isMock && (
+                            <MockBadge onClick={() => handlePatchDistribution(dist, { isMock: false })} />
+                          )}
+                        </span>
                         {dist ? (
                           <div className="flex items-center gap-2">
                             <span className="text-xs" style={{ color: dist.status === 'published' ? '#10b981' : 'var(--color-text-tertiary)' }}>
@@ -475,6 +485,7 @@ export default function Pipeline() {
                 </button>
               </div>
             </div>
+            <MockClaimField isMock={form.isMock} onChange={(v) => setForm((f) => ({ ...f, isMock: v }))} />
           </div>
         )}
       </Modal>

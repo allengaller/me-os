@@ -4,6 +4,8 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import { Plus, Target, ChevronDown, ChevronRight, Edit2, Trash2, LayoutList, LayoutGrid } from 'lucide-react';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 interface KeyResult {
   id: string;
@@ -25,6 +27,7 @@ interface Goal {
   startDate?: string;
   endDate?: string;
   keyResults?: KeyResult[];
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -350,8 +353,16 @@ export default function Goals() {
                         className="card p-4 hover:shadow-md transition-all cursor-pointer"
                         onClick={() => handleOpenEdit(goal)}
                       >
-                        <h3 className="text-sm font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                        <h3 className="text-sm font-medium mb-2 flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
                           {goal.title}
+                          {isMockItem(goal) && (
+                            <MockBadge
+                              onClick={async () => {
+                                await api.patch(`/goals/${goal.id}`, { mock: false });
+                                loadData();
+                              }}
+                            />
+                          )}
                         </h3>
                         {domain && (
                           <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-medium bg-violet-50 text-violet-700 mb-2">

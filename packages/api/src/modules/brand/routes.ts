@@ -24,7 +24,7 @@ const channelCreateSchema = z.object({
   order: z.number().int().optional(),
 });
 
-const channelUpdateSchema = channelCreateSchema.partial();
+const channelUpdateSchema = channelCreateSchema.partial().extend({ isMock: z.boolean().optional() });
 
 const snapshotCreateSchema = z.object({
   channelId: z.string().min(1),
@@ -50,6 +50,7 @@ const profileSchema = z.object({
   toneOfVoice: z.string().max(2000).optional().nullable(),
   targetAudience: z.string().max(2000).optional().nullable(),
   visualNotes: z.string().max(2000).optional().nullable(),
+  isMock: z.boolean().optional(),
 });
 
 const pillarCreateSchema = z.object({
@@ -58,7 +59,7 @@ const pillarCreateSchema = z.object({
   order: z.number().int().optional(),
 });
 
-const pillarUpdateSchema = pillarCreateSchema.partial();
+const pillarUpdateSchema = pillarCreateSchema.partial().extend({ isMock: z.boolean().optional() });
 
 const contentCreateSchema = z.object({
   title: z.string().min(1).max(300),
@@ -76,7 +77,7 @@ const contentCreateSchema = z.object({
   order: z.number().int().optional(),
 });
 
-const contentUpdateSchema = contentCreateSchema.partial();
+const contentUpdateSchema = contentCreateSchema.partial().extend({ isMock: z.boolean().optional() });
 
 const listContentsSchema = z.object({
   status: z.enum(contentStatuses).optional(),
@@ -102,6 +103,7 @@ const distributionUpdateSchema = z.object({
   comments: z.number().int().min(0).optional().nullable(),
   shares: z.number().int().min(0).optional().nullable(),
   note: z.string().max(2000).optional().nullable(),
+  isMock: z.boolean().optional(),
 });
 
 const workCreateSchema = z.object({
@@ -115,7 +117,7 @@ const workCreateSchema = z.object({
   order: z.number().int().optional(),
 });
 
-const workUpdateSchema = workCreateSchema.partial();
+const workUpdateSchema = workCreateSchema.partial().extend({ isMock: z.boolean().optional() });
 
 async function handleError(fastify: FastifyInstance, error: unknown, reply: FastifyReply) {
   if (error instanceof z.ZodError) {

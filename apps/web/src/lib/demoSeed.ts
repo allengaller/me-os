@@ -20,12 +20,21 @@ const agoIso = (days: number, hour = 9) => {
   return d.toISOString();
 };
 
+// 旧版演示账号（标记机制上线前创建的）没有 mock 标记；登录时一次性补标，之后不再重复。
+const MOCK_MARK_VERSION_KEY = 'meos-demo-mock-marked-v1';
+
 export async function ensureDemoAccount() {
   try {
-    return await localDB.auth.login(DEMO_EMAIL, DEMO_PASSWORD);
+    const res = await localDB.auth.login(DEMO_EMAIL, DEMO_PASSWORD);
+    if (!localStorage.getItem(MOCK_MARK_VERSION_KEY)) {
+      await markAllDemoRecordsMock();
+      localStorage.setItem(MOCK_MARK_VERSION_KEY, '1');
+    }
+    return res;
   } catch {
     const reg = await localDB.auth.register(DEMO_NAME, DEMO_EMAIL, DEMO_PASSWORD);
     await seedDemoData();
+    localStorage.setItem(MOCK_MARK_VERSION_KEY, '1');
     return reg;
   }
 }
@@ -195,4 +204,41 @@ async function seedDemoData() {
 
   await localDB.mindsets.create({ content: '输出即学习：讲不清楚就还没想清楚。', category: 'learning', order: 0, pinned: false });
   await localDB.mindsets.create({ content: '先跑通，再打磨：演示优先于完美。', category: 'execution', order: 1, pinned: false });
+
+  await markAllDemoRecordsMock();
+}
+
+/** 演示种子生成的每条记录都打 mock: true（数据层标记）。
+ *  页面据此显示 mock 徽标；用户认领后前端写 mock: false，徽标消失。 */
+async function markAllDemoRecordsMock() {
+  const mark = async (
+    getAll: () => Promise<Record<string, unknown>>,
+    key: string,
+    update: (id: string, data: { mock: boolean }) => Promise<unknown>,
+  ) => {
+    const res = (await getAll()) as Record<string, Array<{ id: string; mock?: boolean }> | undefined>;
+    for (const item of res[key] ?? []) {
+      if (item.mock === false) continue; // 已认领，不重标
+      if (item.mock === true) continue; // 已标记
+      await update(item.id, { mock: true });
+    }
+  };
+
+  await mark(localDB.todos.getAll, 'todos', (id, d) => localDB.todos.update(id, d));
+  await mark(localDB.habits.getAll, 'habits', (id, d) => localDB.habits.update(id, d));
+  await mark(localDB.goals.getAll, 'goals', (id, d) => localDB.goals.update(id, d));
+  await mark(localDB.reflections.getAll, 'reflections', (id, d) => localDB.reflections.update(id, d));
+  await mark(localDB.reviews.getAll, 'reviews', (id, d) => localDB.reviews.update(id, d));
+  await mark(localDB.topics.getAll, 'topics', (id, d) => localDB.topics.update(id, d));
+  await mark(localDB.insights.getAll, 'insights', (id, d) => localDB.insights.update(id, d));
+  await mark(localDB.readingItems.getAll, 'items', (id, d) => localDB.readingItems.update(id, d));
+  await mark(localDB.contacts.getAll, 'contacts', (id, d) => localDB.contacts.update(id, d));
+  await mark(() => localDB.healthRecords.getAll(), 'records', (id, d) => localDB.healthRecords.update(id, d));
+  await mark(localDB.subscriptions.getAll, 'subscriptions', (id, d) => localDB.subscriptions.update(id, d));
+  await mark(localDB.mindsets.getAll, 'slogans', (id, d) => localDB.mindsets.update(id, d));
+
+  const { vision } = await localDB.visions.getActive();
+  if (vision && vision.mock !== true && vision.mock !== false) {
+    await localDB.visions.update(vision.id, { mock: true });
+  }
 }

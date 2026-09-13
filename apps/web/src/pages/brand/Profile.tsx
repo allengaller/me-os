@@ -4,6 +4,7 @@ import { Plus, Trash2, Check } from 'lucide-react';
 import api from '../../lib/api';
 import FormField from '../../components/FormField';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import MockBadge, { MockClaimField } from '../../components/MockBadge';
 import type { BrandPillar, BrandProfile } from '@meos/shared';
 
 const FIELDS: { key: keyof BrandProfile; label: string; textarea?: boolean; placeholder: string }[] = [
@@ -48,6 +49,7 @@ export default function Profile() {
     setJustSaved(false);
     try {
       const payload = Object.fromEntries(FIELDS.map((f) => [f.key, profile[f.key] ?? null]));
+      payload.isMock = profile.isMock ?? false;
       // api 联合类型（AxiosInstance | LocalDBAdapter）未声明 put，但 /brand/profile 后端仅注册 PUT
       const res = await (api as AxiosInstance).put('/brand/profile', payload);
       setProfile(res.data.profile);
@@ -82,6 +84,15 @@ export default function Profile() {
     }
   };
 
+  const claimPillar = async (pillar: BrandPillar) => {
+    try {
+      await api.patch(`/brand/pillars/${pillar.id}`, { isMock: false });
+      setPillars((prev) => prev.map((p) => (p.id === pillar.id ? { ...p, isMock: false } : p)));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -93,6 +104,11 @@ export default function Profile() {
   return (
     <div className="page-enter max-w-3xl">
       <div className="card p-6 mb-6">
+        {profile.isMock && (
+          <div className="flex items-center justify-end mb-2">
+            <MockClaimField isMock={!!profile.isMock} onChange={(v) => setProfile((prev) => ({ ...prev, isMock: v }))} />
+          </div>
+        )}
         <div className="space-y-4">
           {FIELDS.map((field) => (
             <FormField key={field.key} label={field.label}>
@@ -164,6 +180,7 @@ export default function Profile() {
               <div key={pillar.id} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                 <div>
                   <span className="text-sm">{pillar.name}</span>
+                  {pillar.isMock && <MockBadge className="ml-2" onClick={() => claimPillar(pillar)} />}
                   {pillar.description && (
                     <span className="text-xs ml-2" style={{ color: 'var(--color-text-tertiary)' }}>
                       {pillar.description}

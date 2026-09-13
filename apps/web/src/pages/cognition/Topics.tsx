@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 import {
   Plus,
   ChevronDown,
@@ -72,6 +74,8 @@ interface Topic {
   currentUnderstanding: string;
   actionPlan: string;
   notes: Note[];
+  isMock?: boolean;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -164,6 +168,13 @@ export default function Topics() {
         await api.post('/topics', form);
       }
       closeModal();
+      loadTopics();
+    } catch {}
+  };
+
+  const claimTopic = async (topic: Topic) => {
+    try {
+      await api.patch(`/topics/${topic.id}`, { isMock: false, mock: false });
       loadTopics();
     } catch {}
   };
@@ -310,6 +321,7 @@ export default function Topics() {
                       <h3 className="text-base font-medium text-slate-900">
                         {topic.title}
                       </h3>
+                      {isMockItem(topic) && <MockBadge onClick={() => claimTopic(topic)} />}
                       <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">
                         {topic.category}
                       </span>

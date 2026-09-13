@@ -5,6 +5,8 @@ import { format, subDays } from 'date-fns';
 import Modal from './Modal';
 import LoadingSpinner from './LoadingSpinner';
 import LineChart from './charts/LineChart';
+import MockBadge from './MockBadge';
+import { isMockItem } from '../lib/mockFlag';
 
 type HealthType = 'sleep' | 'exercise' | 'weight' | 'mood' | 'energy' | 'water';
 
@@ -16,6 +18,7 @@ interface HealthRecord {
   note?: string;
   date: string;
   recordedAt?: string;
+  mock?: boolean;
   createdAt: string;
 }
 
@@ -277,6 +280,14 @@ export default function HealthTrackerView() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {isMockItem(record) && (
+                <MockBadge
+                  onClick={async () => {
+                    await api.patch(`/health/${record.id}`, { mock: false });
+                    await loadData();
+                  }}
+                />
+              )}
               <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{format(new Date(record.recordedAt || record.date), 'yyyy-MM-dd')}</span>
               <button
                 onClick={() => openEdit(record)}

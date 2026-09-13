@@ -73,7 +73,8 @@ me-os/
 ├── docs/                       # 文档中心（见下方文档导航）
 ├── DESIGN.md                   # 五维数据模型、联动关系与 Dashboard 设计
 ├── GETTING_STARTED.md          # 本地启动指南
-├── dev.sh                      # 一键启动脚本
+├── scripts/meos                # 本地启动 / 管理 / 监控 CLI（零依赖 bash，进程组监管）
+├── dev.sh                      # 兼容壳 → `meos start --bootstrap`
 └── turbo.json / pnpm-workspace.yaml
 ```
 
@@ -83,16 +84,27 @@ me-os/
 
 ### 环境要求
 
-- Node.js 18–20 LTS（Node 22 存在兼容性问题；CI 使用 Node 20）
+- Node.js 18+（推荐 18–20 LTS，CI 使用 Node 20；Node 22 实测可正常启动与渲染）
 - pnpm >= 8.0.0
 
-### 一键启动（推荐）
+### 日常启动（推荐）
 
 ```bash
-./dev.sh
+./scripts/meos start            # 拉起前后端，健康检查通过才返回
+./scripts/meos status           # 谁在跑 / 真实监听 PID / 运行时长 / 健康
+./scripts/meos stop             # 干净停服（按进程组，能穿透 pnpm→tsx→node）
+./scripts/meos logs -f          # 跟随日志
 ```
 
-脚本会自动完成：端口清理 → 依赖安装 → 生成 `JWT_SECRET` → 数据库初始化 → 启动前后端 → 健康检查 → 打开浏览器。
+零依赖（bash + curl + lsof）。也可 `pnpm meos <命令>`。完整命令见 `./scripts/meos help`。
+
+### 首次运行
+
+```bash
+./dev.sh                        # 等价于 ./scripts/meos start --bootstrap
+```
+
+自动完成：依赖安装 → 生成 `JWT_SECRET` → 数据库初始化 → 启动前后端 → 健康检查。
 
 ### 手动启动
 

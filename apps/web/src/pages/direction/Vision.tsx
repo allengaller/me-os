@@ -2,12 +2,15 @@ import { useEffect, useState, useCallback } from 'react';
 import { ChevronDown, ChevronUp, BookOpen, Target, Sparkles, Compass, FileText, Star } from 'lucide-react';
 import api from '../../lib/api';
 import Modal from '../../components/Modal';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 import MindsetView from '../../components/MindsetView';
 
 interface VisionData {
   id: string;
   content: string;
   version: number;
+  mock?: boolean;
   updatedAt: string;
   createdAt: string;
 }
@@ -424,7 +427,17 @@ ${framework.structure.map((s, i) => `${i + 1}. ${s}`).join('\n')}
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>我的愿景</h3>
+                <h3 className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
+                  我的愿景
+                  {isMockItem(vision) && (
+                    <MockBadge
+                      onClick={async () => {
+                        await api.patch(`/visions/${vision.id}`, { mock: false });
+                        await loadVision();
+                      }}
+                    />
+                  )}
+                </h3>
                 <div className="flex items-center gap-3 mt-0.5 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                   <span>版本 {vision.version || 1}</span>
                   <span>更新于 {formatDate(vision.updatedAt || vision.createdAt)}</span>

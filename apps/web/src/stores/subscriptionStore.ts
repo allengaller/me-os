@@ -27,6 +27,7 @@ export interface SubscriptionSummary {
   daysUntilRenewal: number;
   isActive: boolean;
   autoRenew: boolean;
+  mock?: boolean;
 }
 
 export interface Subscription {
@@ -44,6 +45,7 @@ export interface Subscription {
   notes?: string;
   config?: Record<string, unknown>;
   quotas: QuotaDefinition[];
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }

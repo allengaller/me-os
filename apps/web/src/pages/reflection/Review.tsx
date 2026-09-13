@@ -18,6 +18,7 @@ import {
 import { Save, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import MockBadge from '../../components/MockBadge';
 import Daily from './Daily';
 
 type Period = 'week' | 'month' | 'quarter' | 'year';
@@ -83,7 +84,7 @@ export default function Review() {
 
   const [period, setPeriod] = useState<Period>('week');
   const [periodOffset, setPeriodOffset] = useState(0);
-  const [reviews, setReviews] = useState<{ id: string; period: string; startDate: string; endDate: string; achievements?: unknown; challenges?: unknown; insights?: string; nextFocus?: unknown }[]>([]);
+  const [reviews, setReviews] = useState<{ id: string; period: string; startDate: string; endDate: string; achievements?: unknown; challenges?: unknown; insights?: string; nextFocus?: unknown; mock?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -415,6 +416,14 @@ export default function Review() {
           <Save className="w-4 h-4" />
           {saving ? '保存中...' : '保存'}
         </button>
+        {existingId && reviews.find((r) => r.id === existingId)?.mock && (
+          <MockBadge
+            onClick={async () => {
+              await api.patch(`/reviews/${existingId}`, { mock: false });
+              await loadReviews();
+            }}
+          />
+        )}
       </div>
 
       <div className="card p-5">

@@ -22,6 +22,7 @@ export interface Goal {
   startDate: string | null;
   endDate: string | null;
   order: number;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
   domain?: Domain;
@@ -60,6 +61,7 @@ export interface Todo {
   energy: 'high' | 'medium' | 'low' | null;
   order: number;
   completedAt: string | null;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
   goal?: Goal;
@@ -78,6 +80,7 @@ export interface Habit {
   color: string | null;
   isActive: boolean;
   order: number;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
   logs?: HabitLog[];
@@ -104,6 +107,8 @@ export interface Topic {
   relatedDomainId: string | null;
   goalId: string | null;
   order: number;
+  isMock?: boolean;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
   notes?: TopicNote[];

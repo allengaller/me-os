@@ -5,6 +5,8 @@ import Modal from '../../components/Modal';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Pagination from '../../components/Pagination';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 interface InsightNote {
   id: string;
@@ -12,6 +14,7 @@ interface InsightNote {
   content: string;
   tags: string | null;
   category: string | null;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -236,7 +239,12 @@ export default function Insights() {
                   <Lightbulb size={18} style={{ color: 'var(--color-warning)' }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{insight.title}</h3>
+                  <h3 className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
+                    {insight.title}
+                    {isMockItem(insight) && (
+                      <MockBadge onClick={async () => { await api.patch(`/insights/${insight.id}`, { mock: false }); loadData(); }} />
+                    )}
+                  </h3>
                   <p className="text-sm mt-1 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{insight.content}</p>
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     {insight.category && (

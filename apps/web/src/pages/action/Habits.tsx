@@ -7,6 +7,8 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import HealthTrackerView from '../../components/HealthTrackerView';
 import EmptyState from '../../components/EmptyState';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 interface HabitLog { id: string; date: string; }
 
@@ -20,6 +22,7 @@ interface Habit {
   goalId?: string;
   goalTitle?: string;
   logs: HabitLog[];
+  mock?: boolean;
   createdAt: string;
 }
 
@@ -236,6 +239,14 @@ export default function Habits() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>{habit.title}</h3>
+                      {isMockItem(habit) && (
+                        <MockBadge
+                          onClick={async () => {
+                            await api.patch(`/habits/${habit.id}`, { mock: false });
+                            fetchHabits();
+                          }}
+                        />
+                      )}
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                         style={{ backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-tertiary)' }}

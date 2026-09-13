@@ -38,6 +38,9 @@ Thumbs.db
 # Turbo
 .turbo/
 
+# meos CLI 运行态（pidfile / 端口 / 日志，按 checkout 隔离，非项目内容）
+.meos/
+
 # Testing
 coverage/
 .nyc_output/

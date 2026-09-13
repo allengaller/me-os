@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../lib/api';
+import MockBadge from '../components/MockBadge';
+import { isMockItem } from '../lib/mockFlag';
 
 const categories = ['整体置顶', '生活', '工作', '身体', '心理', '物品', '经济'] as const;
 type Category = typeof categories[number];
@@ -9,6 +11,7 @@ interface MindsetSlogan {
   content: string;
   category: string;
   order: number;
+  mock?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -171,7 +174,17 @@ export default function MindsetView() {
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-base text-slate-900 leading-relaxed">{slogan.content}</p>
+                  <p className="text-base text-slate-900 leading-relaxed flex items-center gap-2">
+                    {slogan.content}
+                    {isMockItem(slogan) && (
+                      <MockBadge
+                        onClick={async () => {
+                          await api.patch(`/mindsets/${slogan.id}`, { mock: false });
+                          await loadSlogans();
+                        }}
+                      />
+                    )}
+                  </p>
                   <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
                     <span>创建 {formatDate(slogan.createdAt)}</span>
                     {slogan.updatedAt !== slogan.createdAt && (

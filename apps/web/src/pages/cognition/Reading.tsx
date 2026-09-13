@@ -4,6 +4,8 @@ import { Plus, BookOpen, ExternalLink, Star, Trash2 } from 'lucide-react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 type ReadingType = 'book' | 'article' | 'video' | 'podcast' | 'course';
 type ReadingStatus = 'want' | 'reading' | 'done' | 'abandoned';
@@ -20,6 +22,7 @@ interface ReadingItem {
   topicId?: string;
   startDate?: string;
   endDate?: string;
+  mock?: boolean;
   createdAt: string;
   topic?: { id: string; name: string };
 }
@@ -359,6 +362,14 @@ export default function Reading() {
                 <div className="flex items-center gap-2 mb-1">
                   <BookOpen className="w-4 h-4 text-slate-400" />
                   <h3 className="text-base font-medium text-slate-900">{item.title}</h3>
+                  {isMockItem(item) && (
+                    <MockBadge
+                      onClick={async () => {
+                        await api.patch(`/reading/${item.id}`, { mock: false });
+                        loadData();
+                      }}
+                    />
+                  )}
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${TYPE_COLORS[item.type]}`}>
                     {TYPE_LABELS[item.type]}
                   </span>

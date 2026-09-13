@@ -3,6 +3,7 @@ import { format, startOfDay } from 'date-fns';
 import { Calendar, Plus, X, Save, Sparkles, Trash2 } from 'lucide-react';
 import api from '../../lib/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import MockBadge from '../../components/MockBadge';
 
 interface TodayData {
   date: string;
@@ -36,7 +37,7 @@ function parseJsonArray(val: unknown): string[] {
 
 export default function Daily() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [reflections, setReflections] = useState<{ id: string; date?: string; createdAt?: string; celebrations?: unknown; improvements?: unknown; tomorrow?: string; mood?: string; tags?: string; content?: string }[]>([]);
+  const [reflections, setReflections] = useState<{ id: string; date?: string; createdAt?: string; celebrations?: unknown; improvements?: unknown; tomorrow?: string; mood?: string; tags?: string; content?: string; mock?: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -397,6 +398,14 @@ export default function Daily() {
           <Save className="w-4 h-4" />
           {saving ? '保存中...' : '保存'}
         </button>
+        {existingId && reflections.find((r) => r.id === existingId)?.mock && (
+          <MockBadge
+            onClick={async () => {
+              await api.patch(`/reflections/${existingId}`, { mock: false });
+              await loadReflections();
+            }}
+          />
+        )}
       </div>
 
       <div className="card p-5">

@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSubscriptionStore, Subscription, QuotaDefinition, SubscriptionSummary } from '../../stores/subscriptionStore';
+import MockBadge from '../../components/MockBadge';
+import { isMockItem } from '../../lib/mockFlag';
 
 function UtilizationBar({ utilization, status }: { utilization: number; status: string }) {
   const colors = {
@@ -76,6 +78,15 @@ function SubscriptionCard({ sub, onEdit, onDelete, onAddQuota }: {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
               <h3 className="text-lg font-medium text-slate-900 tracking-tight">{sub.name}</h3>
+              {isMockItem(sub) && (
+                <MockBadge
+                  onClick={async () => {
+                    const { updateSubscription, fetchDashboard } = useSubscriptionStore.getState();
+                    await updateSubscription(sub.id, { mock: false });
+                    await fetchDashboard();
+                  }}
+                />
+              )}
               <span className="text-xs text-slate-400 font-light">{sub.provider}</span>
             </div>
             <div className="flex items-center gap-4 mt-3">

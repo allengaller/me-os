@@ -15,6 +15,8 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import MockBadge from '../components/MockBadge';
+import { isMockItem } from '../lib/mockFlag';
 
 interface Todo {
   id: string;
@@ -23,6 +25,7 @@ interface Todo {
   priority: 'urgent' | 'high' | 'medium' | 'low';
   dueDate?: string;
   goalId?: string;
+  mock?: boolean;
 }
 
 interface HabitLog { id: string; date: string; }
@@ -33,6 +36,7 @@ interface Habit {
   color: string;
   frequency: 'daily' | 'weekly';
   logs: HabitLog[];
+  mock?: boolean;
 }
 
 interface Goal { id: string; title: string; status: string; }
@@ -161,6 +165,25 @@ export default function Today() {
   const goalName = (goalId?: string) => {
     if (!goalId) return null;
     return goals.find((g) => g.id === goalId)?.title;
+  };
+
+  // 认领演示数据：写 mock:false 去除徽标（仅本地演示模式存在 mock 记录）
+  const claimTodo = async (todo: Todo) => {
+    try {
+      await api.patch(`/todos/${todo.id}`, { mock: false });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const claimHabit = async (habit: Habit) => {
+    try {
+      await api.patch(`/habits/${habit.id}`, { mock: false });
+      await loadData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) {
@@ -345,6 +368,7 @@ export default function Today() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    {isMockItem(todo) && <MockBadge onClick={() => claimTodo(todo)} />}
                     <span
                       className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: PRIORITY_DOT[todo.priority] || '#9CA3AF' }}
@@ -399,8 +423,9 @@ export default function Today() {
                       style={{ backgroundColor: habit.color || 'var(--color-text-tertiary)' }}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                      <p className="text-sm flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
                         {habit.title}
+                        {isMockItem(habit) && <MockBadge onClick={() => claimHabit(habit)} />}
                       </p>
                       <p className="text-xs" style={{ color: 'var(--color-ink-3)' }}>
                         {habit.frequency === 'daily' ? '每日' : '每周'}
