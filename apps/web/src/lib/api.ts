@@ -1,9 +1,13 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 import { localDB } from './localDB';
+import { supabaseAdapter } from './supabaseAdapter';
 
 const isChromeExtension = typeof chrome !== 'undefined' && chrome.storage;
-const useLocalMode = isChromeExtension || import.meta.env.VITE_USE_LOCAL === '1';
+const dataMode =
+  isChromeExtension ? 'local'
+  : import.meta.env.VITE_USE_REMOTE === '1' ? 'remote'
+  : 'supabase';
 
 const remoteApi = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
@@ -283,5 +287,5 @@ const routeHandlers: Record<string, (method: string, id: string, segments: strin
   },
 };
 
-export default useLocalMode ? localDBAdapter : remoteApi;
-export { localDB, useLocalMode };
+export default dataMode === 'remote' ? remoteApi : dataMode === 'local' ? localDBAdapter : supabaseAdapter;
+export { localDB, dataMode as useLocalMode };
