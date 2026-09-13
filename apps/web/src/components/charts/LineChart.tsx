@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export interface LineSeries {
   key: string;
@@ -17,6 +17,9 @@ interface LineChartProps {
 }
 
 const PAD = { top: 12, right: 14, bottom: 28 };
+
+// ResizeObserver 首次回报前的占位宽度
+const PRE_MEASURE_W = 600;
 
 function smoothPath(pts: { x: number; y: number }[]): string {
   if (pts.length < 2) return '';
@@ -45,7 +48,16 @@ export default function LineChart({
   showLegend = false,
 }: LineChartProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const [wrapW, setWrapW] = useState(0);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setWrapW(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const { ticks, xStep, plotW, plotH } = useMemo(() => {
     let max = 0;
@@ -59,11 +71,11 @@ export default function LineChart({
     const steps = Math.ceil(max / 4);
     const niceMax = steps * 4;
     const ticks = [0, 1, 2, 3, 4].map((i) => (niceMax / 4) * i);
-    const plotW = Math.max(0, (wrapRef.current?.clientWidth ?? 600) - yWidth - PAD.right);
+    const plotW = Math.max(0, (wrapW || PRE_MEASURE_W) - yWidth - PAD.right);
     const plotH = height - PAD.top - PAD.bottom;
     const xStep = data.length > 1 ? plotW / (data.length - 1) : 0;
     return { ticks, xStep, plotW, plotH };
-  }, [data, series, height, yWidth]);
+  }, [data, series, height, yWidth, wrapW]);
 
   const yOf = (v: number) => PAD.top + plotH - (plotH * Math.min(Math.max(v, 0), ticks[4])) / ticks[4];
   const xOf = (i: number) => yWidth + i * xStep;
@@ -180,7 +192,7 @@ export default function LineChart({
             backgroundColor: 'var(--color-surface)',
             border: '1px solid var(--color-border-light)',
             boxShadow: 'var(--shadow-md)',
-            left: Math.min(Math.max(xOf(hoverIdx) - 60, 0), (wrapRef.current?.clientWidth ?? 0) - 130),
+            left: Math.min(Math.max(xOf(hoverIdx) - 60, 0), wrapW - 130),
             top: 4,
           }}
         >
